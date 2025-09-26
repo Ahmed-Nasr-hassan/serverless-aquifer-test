@@ -2,11 +2,12 @@ import matplotlib.pyplot as plt
 import flopy.utils
 import pandas as pd
 import numpy as np
+import os
 from Units import UnitConverter
 converter = UnitConverter()
 
 class ObservedVsSimulatedPlotter:
-    def __init__(self, head_file_path, screen_layer_indices, obs_id, str_hd, obs_path, col_centroids, analysis_period, pumping_end_time, col_length,workspace):
+    def __init__(self, head_file_path, screen_layer_indices, obs_id, str_hd, obs_path, col_centroids, analysis_period, pumping_end_time, col_length, workspace, well_id=None):
         self.head_file_path = head_file_path
         self.screen_layer_indices = screen_layer_indices
         self.obs_id = obs_id
@@ -19,6 +20,7 @@ class ObservedVsSimulatedPlotter:
         self.analysis_period = analysis_period
         self.pumping_end_time=pumping_end_time
         self.workspace = workspace
+        self.well_id = well_id or f"well_{obs_id}"
         # Load the heads data from the head file
         head_file = flopy.utils.HeadFile(self.head_file_path)
         self.times = head_file.get_times()
@@ -63,6 +65,9 @@ class ObservedVsSimulatedPlotter:
         
     
     def plot_obs_simulated(self):
+        # Create Results folder if it doesn't exist
+        os.makedirs('Results', exist_ok=True)
+        
         if self.analysis_period == "Pumping + Recovery":
             # Plot Observed Curve
             plt.plot(self.observed_time, self.observed_DD, label="Observed Data", linestyle='--', color='k')
@@ -75,7 +80,8 @@ class ObservedVsSimulatedPlotter:
             plt.title("Drawdown of Obsrved VS Simulated")
             plt.legend()
             plt.grid(True)
-            plt.show()
+            plt.savefig(f'Results/drawdown_comparison_{self.well_id}.png', dpi=300, bbox_inches='tight')
+            plt.close()
         elif self.analysis_period == "Pumping Only":
             # Filter or truncate time and drawdown data to the pumping period only
             # Pseudo-code for filtering:
@@ -93,7 +99,8 @@ class ObservedVsSimulatedPlotter:
             plt.title("Drawdown of Observed VS Simulated (Pumping Only)")
             plt.legend()
             plt.grid(True)
-            plt.show()
+            plt.savefig(f'Results/drawdown_comparison_pumping_{self.well_id}.png', dpi=300, bbox_inches='tight')
+            plt.close()
             
         elif self.analysis_period == "Recovery Only":
             # Filter or truncate time and drawdown data to the recovery period only
@@ -114,12 +121,16 @@ class ObservedVsSimulatedPlotter:
             plt.title("Drawdown of Observed VS Simulated (Recovery Only)")
             plt.legend()
             plt.grid(True)
-            plt.show()
+            plt.savefig(f'Results/drawdown_comparison_recovery_{self.well_id}.png', dpi=300, bbox_inches='tight')
+            plt.close()
     
     def get_obs_DD(self):
         return self.avg_head, self.observed_DD, self.observed_time
 
     def plot_avg_head_vs_distance(self):
+        # Create Results folder if it doesn't exist
+        os.makedirs('Results', exist_ok=True)
+        
         # Load the heads data from the head file
         head_file = flopy.utils.HeadFile(self.head_file_path)
 
@@ -151,7 +162,8 @@ class ObservedVsSimulatedPlotter:
         plt.ylabel("Average Head (meters)")
         plt.title("Average Head vs. Distance")
         plt.grid(True)
-        plt.show()
+        plt.savefig(f'Results/avg_head_vs_distance_{self.well_id}.png', dpi=300, bbox_inches='tight')
+        plt.close()
         
         return self.avg_head_at_depth
     

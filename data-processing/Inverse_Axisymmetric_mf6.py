@@ -18,6 +18,8 @@ from DrawdownInterpolation import DrawdownInterpolation
 
 converter = UnitConverter()
 
+# Create Results folder if it doesn't exist
+os.makedirs('Results', exist_ok=True)
 
 calib_df=pd.read_excel(r"Model_Inputs.xlsx")
 
@@ -470,7 +472,8 @@ def run_forward_model(**kwargs):
             analysis_period,
             length_stress_period_pumping,
             col_length,
-            workspace
+            workspace,
+            well_id
         )
         
     # Dictionaries to store drawdown and time data for each well
@@ -541,11 +544,11 @@ def run_forward_model(**kwargs):
     
     # Output excel file paths based on analysis period
     if analysis_period == "Pumping Only":
-        output_excel_basepath = r'Results\DD_vs_Time_Pumping_'
+        output_excel_basepath = 'Results/DD_vs_Time_Pumping_'
     elif analysis_period == "Recovery Only":
-        output_excel_basepath = r'Results\DD_vs_Time_Recovery_'
+        output_excel_basepath = 'Results/DD_vs_Time_Recovery_'
     else:
-        output_excel_basepath = r'Results\DD_vs_Time_'
+        output_excel_basepath = 'Results/DD_vs_Time_'
     
     # Loop over each observation well to perform drawdown interpolation and save results
     for well_id in final_observed_time_dict.keys():
@@ -1076,7 +1079,8 @@ def objective_function(parameter_values):
             analysis_period,
             length_stress_period_pumping,
             col_length,
-            workspace
+            workspace,
+            well_id
         )
         
     # Dictionaries to store drawdown and time data for each well
@@ -1296,7 +1300,7 @@ else:
       
     # Output excel file path based on analysis period
     analysis_period = calib_df.at[25, 'Value']
-    base_output_excel_path = r'Results\Optimal_Values'
+    base_output_excel_path = 'Results/Optimal_Values'
     if analysis_period == "Pumping Only":
         output_excel_path_hk = base_output_excel_path + '_Hk_Pumping.xlsx'
         output_excel_path_other = base_output_excel_path + '_Pumping.xlsx'
