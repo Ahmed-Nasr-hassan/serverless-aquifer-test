@@ -1,2 +1,2 @@
-./__pycache__
-./venv
+data-processing/__pycache__/*
+data-processing/venv/*
