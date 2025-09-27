@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "source_file": "Model_Inputs.xlsx",
+    "sheets": [
+      "Model Inputs",
+      "Hydraulic Conductivity"
+    ],
+    "conversion_timestamp": "2025-09-27T14:31:21.770466"
+  },
+  "data": {
+    "model_inputs": {
+      "general": {
+        "Radial Discretization": {
+          "value": null
+        },
+        "Vertical Discritization": {
+          "value": null
+        },
+        "Pumping Well": {
+          "value": null
+        },
+        "Initial and Boundary Conditions": {
+          "value": null
+        },
+        "Stress Periods and Time Steps": {
+          "value": null
+        },
+        "Hydraulic Parameters": {
+          "value": null
+        },
+        "Observation Well Path": {
+          "value": "OBS-1",
+          "unit": "No"
+        },
+        "Type of Simulation": {
+          "value": null
+        },
+        "Solve for Parameter Estimation": {
+          "value": null
+        }
+      },
+      "radial_discretization": {
+        "Boundary distance from pumping well": {
+          "value": 500,
+          "unit": "m"
+        },
+        "2nd Column Size": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "Column Multiplier": {
+          "value": 1.1
+        }
+      },
+      "vertical_discretization": {
+        "Saturated top elevation": {
+          "value": -121.84,
+          "unit": "m"
+        },
+        "Aquifer bottom elevation": {
+          "value": -500,
+          "unit": "m"
+        },
+        "Screen top - Cell thickness": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "Screen bottom- Cell thickness": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "Refinment above screen": {
+          "value": 1.6
+        },
+        "Refinment below screen": {
+          "value": 1.3
+        },
+        "Refinment between screen": {
+          "value": 1.1
+        }
+      },
+      "pumping_well": {
+        "Well Radius": {
+          "value": 0.22,
+          "unit": "m"
+        },
+        "Q": {
+          "value": -141,
+          "unit": "m³/hr"
+        },
+        "Screen Top Elevation": {
+          "value": -212,
+          "unit": "m"
+        },
+        "Screen Bottom Elevation": {
+          "value": -378,
+          "unit": "m"
+        }
+      },
+      "observation_wells": {
+        "Observation Wells": {
+          "value": "OBS-1",
+          "unit": "No"
+        },
+        "Observation Well Distance (m)": {
+          "value": 53
+        },
+        "Observation Top Screen Level (m)": {
+          "value": -212
+        },
+        "Observation Bottom Screen Level (m)": {
+          "value": -300
+        }
+      },
+      "initial_boundary_conditions": {
+        "Starting Head": {
+          "value": -121.84,
+          "unit": "m"
+        },
+        "Specified Head": {
+          "value": -121.84,
+          "unit": "m"
+        }
+      },
+      "stress_periods": {
+        "Analysis Period": {
+          "value": "Pumping + Recovery"
+        },
+        "Pumping length": {
+          "value": 2966,
+          "unit": "minutes"
+        },
+        "Recovery length": {
+          "value": 1200,
+          "unit": "minutes"
+        },
+        "Number of time steps": {
+          "value": 200
+        },
+        "Time Multiplier": {
+          "value": 1.05
+        },
+        "Time Units": {
+          "value": "SECONDS"
+        }
+      },
+      "hydraulic_parameters": {
+        "Hydraulic Conductivity": {
+          "value": 0.8
+        },
+        "Vk/Hk Ratio": {
+          "value": 1
+        },
+        "Specific Yield (Sy)": {
+          "value": 0.124
+        },
+        "Specific Storage (Ss)": {
+          "value": 1.84771e-07
+        }
+      },
+      "data_files": {
+        "Observed Data": {
+          "value": "Al_Monera.csv"
+        }
+      },
+      "simulation_settings": {
+        "Choose Type of Simulation": {
+          "value": "Optimization"
+        },
+        "Hydraulic Conductivity Flag": {
+          "value": "Yes"
+        },
+        "Vk/Hk Ratio Flag": {
+          "value": "No"
+        },
+        "Specific Yield (Sy) Flag": {
+          "value": "Yes"
+        },
+        "Specific Storage (Ss) Flag": {
+          "value": "Yes"
+        }
+      }
+    },
+    "hydraulic_conductivity": [
+      {
+        "soil_material": "Sandstone",
+        "layer_top_level_m": 0.0,
+        "layer_bottom_level_m": -700.0,
+        "hydraulic_conductivity_m_per_day": 0.777767
+      }
+    ]
+  }
+}

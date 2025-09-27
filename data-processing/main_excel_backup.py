@@ -15,32 +15,30 @@ import os
 from ColumnCalculator import ColumnCalculator
 from scipy.optimize import fmin
 from DrawdownInterpolation import DrawdownInterpolation
-from JsonDataLoader import JsonDataLoader
 
 converter = UnitConverter()
 
 # Create Results folder if it doesn't exist
 os.makedirs('Results', exist_ok=True)
 
-# Load JSON data instead of Excel
-calib_df = JsonDataLoader("Model_Inputs.json")
+calib_df=pd.read_excel(r"Model_Inputs.xlsx")
 
 # Add a flag to control the mode (forward run or optimization)
-run_type = calib_df.at('Choose Type of Simulation', 'Value')  # Set to True for forward run, False for optimization
+run_type = calib_df.at[39,'Value']  # Set to True for forward run, False for optimization
 # Hydraulic Parameters
 # Primary Hydraulic properties
-VANI = calib_df.at('Vk/Hk Ratio', 'Value')  # Vertical anisotropy (Vk/Hk)
-sy = calib_df.at('Specific Yield (Sy)', 'Value') # Specific yield
-ss = calib_df.at('Specific Storage (Ss)', 'Value')  # Specific storage
+VANI = calib_df.at[33, 'Value']  # Vertical anisotropy (Vk/Hk)
+sy = calib_df.at[34, 'Value'] # Specific yield
+ss = calib_df.at[35, 'Value']  # Specific storage
 
 # Function to run the forward model
 def run_forward_model(**kwargs):
     # Model Inputs
-    input_df = JsonDataLoader("Model_Inputs.json")
-    #Original values from json data
-    default_values ={'sy': input_df.at('Specific Yield (Sy)', 'Value'), 'ss': input_df.at('Specific Storage (Ss)', 'Value')}
-    # Read hydraulic conductivity values from json data
-    hk_df = input_df.get_hydraulic_conductivity_data()
+    input_df=pd.read_excel(r"Model_Inputs.xlsx")
+    #Original values from excel sheet
+    default_values ={'sy': input_df.at[34, 'Value'], 'ss': input_df.at[35, 'Value']}
+    # Read hydraulic conductivity values from a separate sheet
+    hk_df = pd.read_excel(r"Model_Inputs.xlsx", sheet_name='Hydraulic Conductivity')
     hk_profile = {(row['Layer Top Level [m]'], row['Layer Bottom Level [m]']): row['Hydraulic Conductivity [m/day]']
                   for index, row in hk_df.iterrows() if not pd.isnull(row['Layer Top Level [m]'])}
 
@@ -57,36 +55,50 @@ def run_forward_model(**kwargs):
 
     # Define the Model Extent, Grid Resolution, and Characteristics for Axisymmetric Flow
     nrow = 1  # Number of rows
-    col_length = input_df.at('Boundary distance from pumping well', 'Value')   # Distance of boundary from pumping well
+    col_length = input_df.at[1, 'Value']   # Distance of boundary from pumping well
     # Define the vertical properties
-    ztop = input_df.at('Saturated top elevation', 'Value')  # Top elevation of top layer
-    zbot = input_df.at('Aquifer bottom elevation', 'Value')  # Bottom elevation of the last layer
-    sc_top = input_df.at('Screen Top Elevation', 'Value')
-    sc_bottom = input_df.at('Screen Bottom Elevation', 'Value')
-    sc_top_thick = input_df.at('Screen top - Cell thickness', 'Value')
-    sc_bottom_thick = input_df.at('Screen bottom- Cell thickness', 'Value')
-    refine_above_screen=input_df.at('Refinment above screen', 'Value')
-    refine_below_screen=input_df.at('Refinment below screen', 'Value')
-    refine_between_screen=input_df.at('Refinment between screen', 'Value')
+    ztop = input_df.at[5, 'Value']  # Top elevation of top layer
+    zbot = input_df.at[6, 'Value']  # Bottom elevation of the last layer
+    sc_top = input_df.at[15, 'Value']
+    sc_bottom = input_df.at[16, 'Value']
+    sc_top_thick = input_df.at[7, 'Value']
+    sc_bottom_thick = input_df.at[8, 'Value']
+    refine_above_screen=input_df.at[9, 'Value']
+    refine_below_screen=input_df.at[10, 'Value']
+    refine_between_screen=input_df.at[11, 'Value']
     # Define horizontal desctritization data
-    radius_well=input_df.at('Well Radius', 'Value')
-    cell_size=input_df.at('2nd Column Size', 'Value')
-    horizontal_multiplier=input_df.at('Column Multiplier', 'Value')
+    radius_well=input_df.at[13, 'Value']
+    cell_size=input_df.at[2, 'Value']
+    horizontal_multiplier=input_df.at[3, 'Value']
     #Specified Head
-    specified_head = input_df.at('Specified Head', 'Value')  # Head value for the specified head boundary
+    specified_head = input_df.at[23, 'Value']  # Head value for the specified head boundary
     # Pumng Rate
-    Q_m3_hr = input_df.at('Q', 'Value') #m³/hr
+    Q_m3_hr = input_df.at[14, 'Value'] #m³/hr
     Q = converter.cubic_m_per_hour_to_cubic_m_per_sec(Q_m3_hr)
     
     ##################################################################################################
     # Define Observation Wells
-    # Read observation wells data from JSON
-    obs_wells_data = input_df.get_observation_wells_data()
-    obs_well_ids = obs_wells_data['Well ID'].tolist()
+    # Read the Excel file to determine the number of observation wells
+    # For this, read only the relevant row where the observation well IDs are located (assuming this is row 18)
+    obs_well_ids = pd.read_excel(r"Model_Inputs.xlsx", skiprows=18, nrows=1, header=None).values.flatten()
+    # Filter out non-observation well entries (like NaNs)
+    obs_well_ids = [id for id in obs_well_ids if not pd.isna(id) and str(id).startswith('OBS')] 
+    # Read the observation wells data
+    obs_wells_data = pd.read_excel(r"Model_Inputs.xlsx", skiprows=18, usecols=lambda x: 'Unnamed' not in x, nrows=3)
+    # The above usecols argument with lambda function will skip columns with 'Unnamed' in the header
+    # Transpose the DataFrame to have wells as rows and reset index
+    obs_wells_data = obs_wells_data.T.reset_index(drop=True) 
+    # Slice the DataFrame to only include existing wells based on the IDs detected
+    obs_wells_data = obs_wells_data.iloc[:len(obs_well_ids)+1]
+    obs_wells_data.columns = ['Observation Well Distance (m)', 'Observation Top Screen Level (m)', 'Observation Bottom Screen Level (m)']
+    #drop index zero
+    obs_wells_data.drop(index=0, inplace=True)
+    # Insert a column with well IDs at the beginning of the DataFrame
+    obs_wells_data.insert(0, 'Well ID', obs_well_ids)
     #################################################################################################################
     
     # Analysis Period => Pumping Only or Recovery Only or Pumping+Recovery
-    analysis_period = input_df.at('Analysis Period', 'Value')  # New cell location might need adjustment
+    analysis_period = input_df.at[25, 'Value']  # New cell location might need adjustment
     if analysis_period == "Pumping Only":
         include_pumping = True
         include_recovery = False
@@ -105,13 +117,13 @@ def run_forward_model(**kwargs):
     elif analysis_period == "Pumping + Recovery":  # "Pumping + Recovery"
         Number_Stress_Periods = 2  # Both pumping and recovery periods
         
-    length_min=input_df.at('Pumping length', 'Value')  # Time in minutes
+    length_min=input_df.at[26, 'Value']  # Time in minutes
     length_stress_period_pumping =converter.minutes_to_sec(length_min)   # Length of pumping time in days
-    length_recovery_min = input_df.at('Recovery length', 'Value')  # Adjust the length for recovery
+    length_recovery_min = input_df.at[27, 'Value']  # Adjust the length for recovery
     length_stress_period_recovery =converter.minutes_to_sec(length_recovery_min)   # Length of pumping time in days
-    NTSP = input_df.at('Number of time steps', 'Value')  # Number of time steps
-    TSMULT = input_df.at('Time Multiplier', 'Value')  # Multiplier
-    T_Unit = input_df.at('Time Units', 'Value') #Units of time ("seconds", "minutes", "hours", "days", or "years".)
+    NTSP = input_df.at[28, 'Value']  # Number of time steps
+    TSMULT = input_df.at[29, 'Value']  # Multiplier
+    T_Unit = input_df.at[30, 'Value'] #Units of time (“seconds”, “minutes”, “hours”, “days”, or “years”.)
 
     # Create an instance for vertical refinment
     vr = VerticalRefinement(ztop, zbot, sc_top, sc_bottom, sc_top_thick, sc_bottom_thick,
@@ -209,8 +221,8 @@ def run_forward_model(**kwargs):
         layer_fluxes.append(layer_flux)
 
     # Define the initial head conditions
-    str_hd = input_df.at('Starting Head', 'Value') # Initial Condition (Starting Head)
-    observed_drawdown_end_of_pumping = input_df.at('Observed Data', 'Value')
+    str_hd = input_df.at[22, 'Value'] # Initial Condition (Starting Head)
+    observed_drawdown_end_of_pumping = input_df.at[37, 'Value']
     # Adjusting the initial condition for "Recovery Only" scenario
     if analysis_period == "Recovery Only":
         final_heads_filename = os.path.join(workspace, "final_heads_pumping.npy")
@@ -255,7 +267,7 @@ def run_forward_model(**kwargs):
     chd = flopy.mf6.ModflowGwfchd(gwf, stress_period_data=perioddata)
 
     # Define the LPF package
-    VANI = input_df.at('Vk/Hk Ratio', 'Value')  # Vertical anisotropy (Vk/Hk)
+    VANI = input_df.at[33, 'Value']  # Vertical anisotropy (Vk/Hk)
     lpf = flopy.mf6.ModflowGwfnpf(
         gwf, 
         icelltype=laytyp,
@@ -276,7 +288,7 @@ def run_forward_model(**kwargs):
     layer_end = sc_bottom_id    # Ending layer number
 
    # Determine the analysis period and initialize stress_period_data accordingly
-    analysis_period = input_df.at('Analysis Period', 'Value')
+    analysis_period = input_df.at[25, 'Value']
     if analysis_period == "Pumping Only":
         stress_period_data = {0: []}  # Only pumping period
     elif analysis_period == "Recovery Only":
@@ -418,7 +430,8 @@ def run_forward_model(**kwargs):
             
     ################################################################################################
     # Read the observation well paths
-    obs_well_files = input_df.get_observation_well_files()
+    obs_well_files = pd.read_excel(r"Model_Inputs.xlsx", skiprows=37, usecols="B:E", nrows=1)
+    obs_well_files = obs_well_files.iloc[0].dropna().to_dict()  # Convert to a dictionary and drop any NaN values
     
     # Assuming obs_wells_data is already correctly set up from earlier steps
     obs_wells_distances = obs_wells_data['Observation Well Distance (m)'].astype(float).tolist()
@@ -578,9 +591,9 @@ def run_forward_model(**kwargs):
 # Function to define the objective function for optimization
 def objective_function(parameter_values):
     # Model Inputs
-    input_df = JsonDataLoader("Model_Inputs.json")
-    # Read hydraulic conductivity values from json data
-    hk_df = input_df.get_hydraulic_conductivity_data()
+    input_df=pd.read_excel(r"Model_Inputs.xlsx")
+    # Read hydraulic conductivity values from a separate sheet
+    hk_df = pd.read_excel(r"Model_Inputs.xlsx", sheet_name='Hydraulic Conductivity')
     hk_profile = {(row['Layer Top Level [m]'], row['Layer Bottom Level [m]']): row['Hydraulic Conductivity [m/day]']
                   for index, row in hk_df.iterrows() if not pd.isnull(row['Layer Top Level [m]'])}
     # Assume the first n values in parameter_values correspond to hk values for n layers
@@ -594,8 +607,8 @@ def objective_function(parameter_values):
     hk_profile_updated = {depth_range: hk for depth_range, hk in zip(hk_profile.keys(), hk_values_list)}
     
     # Initialize defaults
-    initial_sy = input_df.at('Specific Yield (Sy)', 'Value')
-    initial_ss = input_df.at('Specific Storage (Ss)', 'Value')
+    initial_sy = input_df.at[34, 'Value']
+    initial_ss = input_df.at[35, 'Value']
     # Use a dictionary to map parameter names to their corresponding initial values
     param_initial_values = {
         'sy': initial_sy,
@@ -619,38 +632,52 @@ def objective_function(parameter_values):
 
     # Define the Model Extent, Grid Resolution, and Characteristics for Axisymmetric Flow
     nrow = 1  # Number of rows
-    col_length = input_df.at('Boundary distance from pumping well', 'Value')   # Number of columns
+    col_length = input_df.at[1, 'Value']   # Number of columns
     # Define the vertical properties
-    ztop = input_df.at('Saturated top elevation', 'Value')  # Top elevation of top layer
-    zbot = input_df.at('Aquifer bottom elevation', 'Value')  # Bottom elevation of the last layer
-    sc_top = input_df.at('Screen Top Elevation', 'Value')
-    sc_bottom = input_df.at('Screen Bottom Elevation', 'Value')
-    sc_top_thick = input_df.at('Screen top - Cell thickness', 'Value')
-    sc_bottom_thick = input_df.at('Screen bottom- Cell thickness', 'Value')
-    refine_above_screen=input_df.at('Refinment above screen', 'Value')
-    refine_below_screen=input_df.at('Refinment below screen', 'Value')
-    refine_between_screen=input_df.at('Refinment between screen', 'Value')
+    ztop = input_df.at[5, 'Value']  # Top elevation of top layer
+    zbot = input_df.at[6, 'Value']  # Bottom elevation of the last layer
+    sc_top = input_df.at[15, 'Value']
+    sc_bottom = input_df.at[16, 'Value']
+    sc_top_thick = input_df.at[7, 'Value']
+    sc_bottom_thick = input_df.at[8, 'Value']
+    refine_above_screen=input_df.at[9, 'Value']
+    refine_below_screen=input_df.at[10, 'Value']
+    refine_between_screen=input_df.at[11, 'Value']
     # Define horizontal desctritization data
-    radius_well=input_df.at('Well Radius', 'Value')
-    cell_size=input_df.at('2nd Column Size', 'Value')
-    horizontal_multiplier=input_df.at('Column Multiplier', 'Value')
+    radius_well=input_df.at[13, 'Value']
+    cell_size=input_df.at[2, 'Value']
+    horizontal_multiplier=input_df.at[3, 'Value']
 
     #Specified Head
-    specified_head = input_df.at('Specified Head', 'Value')  # Head value for the specified head boundary
+    specified_head = input_df.at[23, 'Value']  # Head value for the specified head boundary
     # Pumng Rate
-    Q_m3_hr = input_df.at('Q', 'Value') #m³/hr
+    Q_m3_hr = input_df.at[14, 'Value'] #m³/hr
     Q = converter.cubic_m_per_hour_to_cubic_m_per_sec(Q_m3_hr)
     # Define Observation Wells
 
     ##################################################################################################
     # Define Observation Wells
-    # Read observation wells data from JSON
-    obs_wells_data = input_df.get_observation_wells_data()
-    obs_well_ids = obs_wells_data['Well ID'].tolist()
+    # Read the Excel file to determine the number of observation wells
+    # For this, read only the relevant row where the observation well IDs are located (assuming this is row 18)
+    obs_well_ids = pd.read_excel(r"Model_Inputs.xlsx", skiprows=18, nrows=1, header=None).values.flatten()
+    # Filter out non-observation well entries (like NaNs)
+    obs_well_ids = [id for id in obs_well_ids if not pd.isna(id) and str(id).startswith('OBS')] 
+    # Read the observation wells data
+    obs_wells_data = pd.read_excel(r"Model_Inputs.xlsx", skiprows=18, usecols=lambda x: 'Unnamed' not in x, nrows=3)
+    # The above usecols argument with lambda function will skip columns with 'Unnamed' in the header
+    # Transpose the DataFrame to have wells as rows and reset index
+    obs_wells_data = obs_wells_data.T.reset_index(drop=True) 
+    # Slice the DataFrame to only include existing wells based on the IDs detected
+    obs_wells_data = obs_wells_data.iloc[:len(obs_well_ids)+1]
+    obs_wells_data.columns = ['Observation Well Distance (m)', 'Observation Top Screen Level (m)', 'Observation Bottom Screen Level (m)']
+    #drop index zero
+    obs_wells_data.drop(index=0, inplace=True)
+    # Insert a column with well IDs at the beginning of the DataFrame
+    obs_wells_data.insert(0, 'Well ID', obs_well_ids)
     #################################################################################################################
     
     # Stress Periods
-    analysis_period = input_df.at('Analysis Period', 'Value')  # New cell location might need adjustment
+    analysis_period = calib_df.at[25, 'Value']  # New cell location might need adjustment
     if analysis_period == "Pumping Only":
         include_pumping = True
         include_recovery = False
@@ -670,13 +697,13 @@ def objective_function(parameter_values):
         Number_Stress_Periods = 2  # Both pumping and recovery periods
         
         
-    length_min=input_df.at('Pumping length', 'Value')  # Time in minutes
+    length_min=input_df.at[26, 'Value']  # Time in minutes
     length_stress_period_pumping =converter.minutes_to_sec(length_min)   # Length of pumping time in days
-    length_recovery_min = input_df.at('Recovery length', 'Value')  # Adjust the length for recovery
+    length_recovery_min = input_df.at[27, 'Value']  # Adjust the length for recovery
     length_stress_period_recovery =converter.minutes_to_sec(length_recovery_min)   # Length of pumping time in days
-    NTSP = input_df.at('Number of time steps', 'Value')  # Number of time steps
-    TSMULT = input_df.at('Time Multiplier', 'Value')  # Multiplier
-    T_Unit = input_df.at('Time Units', 'Value') #Units of time ("seconds", "minutes", "hours", "days", or "years".)
+    NTSP = input_df.at[28, 'Value']  # Number of time steps
+    TSMULT = input_df.at[29, 'Value']  # Multiplier
+    T_Unit = input_df.at[30, 'Value'] #Units of time (“seconds”, “minutes”, “hours”, “days”, or “years”.)
 
     # Create an instance for vertical refinment
     vr = VerticalRefinement(ztop, zbot, sc_top, sc_bottom, sc_top_thick, sc_bottom_thick,
@@ -695,7 +722,7 @@ def objective_function(parameter_values):
     # Iterate through hk_profile and update the Hk values to m/sec
     hk_profile_m_sec = {depth_range: converter.meters_per_day_to_meters_per_sec(hk) for depth_range, hk in hk_profile_updated.items()}
 
-    VANI = input_df.at('Vk/Hk Ratio', 'Value')  # Vertical anisotropy (Vk/Hk)
+    VANI = input_df.at[33, 'Value']  # Vertical anisotropy (Vk/Hk)
     sy = initial_sy # Specific yield
     ss = initial_ss  # Specific storage
     laytyp = 3  # Layer type (1 for unconfined)
@@ -806,8 +833,8 @@ def objective_function(parameter_values):
     
     # Initial Condition (Starting Head)
     # Define the initial head conditions
-    str_hd = input_df.at('Starting Head', 'Value') # Initial Condition (Starting Head)
-    observed_drawdown_end_of_pumping = input_df.at('Observed Data', 'Value')
+    str_hd = input_df.at[22, 'Value'] # Initial Condition (Starting Head)
+    observed_drawdown_end_of_pumping = input_df.at[37, 'Value']
     # Adjusting the initial condition for "Recovery Only" scenario
     if analysis_period == "Recovery Only":
         final_heads_filename = os.path.join(workspace, "final_heads_pumping.npy")
@@ -861,7 +888,7 @@ def objective_function(parameter_values):
     layer_end = sc_bottom_id    # Ending layer number
     
     # Determine the analysis period and initialize stress_period_data accordingly
-    analysis_period = input_df.at('Analysis Period', 'Value')
+    analysis_period = input_df.at[25, 'Value']
     if analysis_period == "Pumping Only":
         stress_period_data = {0: []}  # Only pumping period
     elif analysis_period == "Recovery Only":
@@ -1010,7 +1037,8 @@ def objective_function(parameter_values):
     # # Plot Simulated VS Observed 
     ################################################################################################
     # Read the observation well paths
-    obs_well_files = input_df.get_observation_well_files()
+    obs_well_files = pd.read_excel(r"Model_Inputs.xlsx", skiprows=37, usecols="B:E", nrows=1)
+    obs_well_files = obs_well_files.iloc[0].dropna().to_dict()  # Convert to a dictionary and drop any NaN values
     
     # Assuming obs_wells_data is already correctly set up from earlier steps
     obs_wells_distances = obs_wells_data['Observation Well Distance (m)'].astype(float).tolist()
@@ -1158,8 +1186,8 @@ def objective_function(parameter_values):
 
 if run_type=="Forward Run":
     # Define depth-based Hk values (depth ranges in meters, Hk in m/day)
-    # Read the 'Hydraulic Conductivity' data from JSON
-    df_hk = calib_df.get_hydraulic_conductivity_data()
+    # Read the 'Hydraulic Conductivity' sheet from the Excel file
+    df_hk = pd.read_excel('Model_Inputs.xlsx', sheet_name='Hydraulic Conductivity')
     # Initialize an empty dictionary to store the hk values
     hk_profile = {}
 
@@ -1176,10 +1204,10 @@ if run_type=="Forward Run":
         # Add to the hk_profile dictionary
         hk_profile[(top_level, bottom_level)] = hk_value
     # Run the forward model
-    run_forward_model(hk_profile=hk_profile, sy=calib_df.at('Specific Yield (Sy)', 'Value'), ss=calib_df.at('Specific Storage (Ss)', 'Value'))
+    run_forward_model(hk_profile=hk_profile, sy=calib_df.at[34, 'Value'], ss=calib_df.at[35, 'Value'])
 else:
-    # Read the 'Hydraulic Conductivity' data from JSON
-    df_hk = calib_df.get_hydraulic_conductivity_data()
+    # Read the 'Hydraulic Conductivity' sheet from the Excel file
+    df_hk = pd.read_excel('Model_Inputs.xlsx', sheet_name='Hydraulic Conductivity')
     hk_profile = {}
 
     # Convert the DataFrame to the hk_profile dictionary
@@ -1195,27 +1223,27 @@ else:
         # Add to the hk_profile dictionary
         hk_profile[(top_level, bottom_level)] = hk_value
 
-    # Define the parameters to optimize based on flags in the JSON file
+    # Define the parameters to optimize based on flags in the Excel file
     params_to_optimize = []
     initial_guess = []
-    solve_Hk= calib_df.at('Hydraulic Conductivity Flag', 'Value')
-    solve_Sy= calib_df.at('Specific Yield (Sy) Flag', 'Value')
-    solve_Ss= calib_df.at('Specific Storage (Ss) Flag', 'Value')
+    solve_Hk= calib_df.at[41,'Value']
+    solve_Sy= calib_df.at[43,'Value']
+    solve_Ss= calib_df.at[44,'Value']
     #initial_guess = [calib_df.at[32, 'Value'],  calib_df.at[34, 'Value'], calib_df.at[35, 'Value']]  # Example initial parameter values
     # Add parameters based on flags
     if solve_Hk == 'Yes':
-        hk_df = calib_df.get_hydraulic_conductivity_data()
+        hk_df = pd.read_excel(r"Model_Inputs.xlsx", sheet_name='Hydraulic Conductivity')
         for index, row in hk_df.iterrows():
             params_to_optimize.append(f'hk_layer_{index+1}')
             initial_guess.append(row['Hydraulic Conductivity [m/day]'])
         
     if solve_Sy == 'Yes':
         params_to_optimize.append('sy')
-        initial_guess.append(calib_df.at('Specific Yield (Sy)', 'Value'))
+        initial_guess.append(calib_df.at[34, 'Value'])
         
     if solve_Ss == 'Yes':
         params_to_optimize.append('ss')
-        initial_guess.append(calib_df.at('Specific Storage (Ss)', 'Value'))
+        initial_guess.append(calib_df.at[35, 'Value'])
 
     # Optimize parameters
     result = fmin(objective_function, initial_guess, maxiter=20, disp=True)
@@ -1223,8 +1251,8 @@ else:
     # Extract the optimal parameters
     # Store the results for hydraulic conductivity in a list
     hk_results = result[:hk_df.shape[0]]  # Assuming the first N results correspond to hk values for N layers
-    sy_result = result[-2] if solve_Sy == 'Yes' else calib_df.at('Specific Yield (Sy)', 'Value')
-    ss_result = result[-1] if solve_Ss == 'Yes' else calib_df.at('Specific Storage (Ss)', 'Value')
+    sy_result = result[-2] if solve_Sy == 'Yes' else calib_df.at[34, 'Value']
+    ss_result = result[-1] if solve_Ss == 'Yes' else calib_df.at[35, 'Value']
     
     # Create a DataFrame for hydraulic conductivity results
     hk_results_df = pd.DataFrame({
@@ -1271,7 +1299,7 @@ else:
     hk_results_df = pd.DataFrame(optimal_hk_values, columns=['Layer Number', 'Hydraulic Conductivity [m/day]'])
       
     # Output excel file path based on analysis period
-    analysis_period = calib_df.at('Analysis Period', 'Value')
+    analysis_period = calib_df.at[25, 'Value']
     base_output_excel_path = 'Results/Optimal_Values'
     if analysis_period == "Pumping Only":
         output_excel_path_hk = base_output_excel_path + '_Hk_Pumping.xlsx'
