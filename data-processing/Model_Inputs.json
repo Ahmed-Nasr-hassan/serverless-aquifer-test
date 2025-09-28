@@ -146,16 +146,16 @@
       },
       "hydraulic_parameters": {
         "Hydraulic Conductivity": {
-          "value": 0.8
+          "value": 0.9073948333333328
         },
         "Vk/Hk Ratio": {
           "value": 1
         },
         "Specific Yield (Sy)": {
-          "value": 0.124
+          "value": 0.11662639999999996
         },
         "Specific Storage (Ss)": {
-          "value": 1.84771e-07
+          "value": 3.977036316666669e-07
         }
       },
       "data_files": {
@@ -165,7 +165,7 @@
       },
       "simulation_settings": {
         "Choose Type of Simulation": {
-          "value": "Optimization"
+          "value": "Forward Run"
         },
         "Hydraulic Conductivity Flag": {
           "value": "Yes"
@@ -186,7 +186,7 @@
         "soil_material": "Sandstone",
         "layer_top_level_m": 0.0,
         "layer_bottom_level_m": -700.0,
-        "hydraulic_conductivity_m_per_day": 0.777767
+        "hydraulic_conductivity_m_per_day": 0.9073948333333328
       }
     ]
   }

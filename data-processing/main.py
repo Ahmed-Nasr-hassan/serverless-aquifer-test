@@ -545,33 +545,42 @@ def objective_function(parameter_values, config):
         # Get optimization flags
         flags = config.get_optimization_flags()
         
-        # Parse parameter values
+        # Parse parameter values based on what was actually optimized
         hk_profile = config.get_hydraulic_conductivity_profile()
         hk_df = config.loader.get_hydraulic_conductivity_data()
         
-        # Update hk_profile with optimized values
-        hk_values_list = parameter_values[:len(hk_profile)]
-        remaining_values = parameter_values[len(hk_profile):]
-        
-        # Update hk_profile
-        hk_profile_updated = {}
-        for i, (depth_range, _) in enumerate(hk_profile.items()):
-            if i < len(hk_values_list):
-                hk_profile_updated[depth_range] = hk_values_list[i]
-            else:
-                hk_profile_updated[depth_range] = list(hk_profile.values())[i]
-        
-        # Get sy and ss values
         param_idx = 0
+        hk_values_list = []
         sy = config.loader.at('Specific Yield (Sy)', 'Value')
         ss = config.loader.at('Specific Storage (Ss)', 'Value')
         
+        # Extract hk values if they were optimized
+        if flags['solve_Hk'] == 'Yes':
+            hk_values_list = parameter_values[param_idx:param_idx + len(hk_profile)]
+            param_idx += len(hk_profile)
+        
+        # Extract sy value if it was optimized
         if flags['solve_Sy'] == 'Yes':
-            sy = remaining_values[param_idx]
+            sy = parameter_values[param_idx]
             param_idx += 1
         
+        # Extract ss value if it was optimized
         if flags['solve_Ss'] == 'Yes':
-            ss = remaining_values[param_idx]
+            ss = parameter_values[param_idx]
+        
+        # Update hk_profile with optimized values
+        hk_profile_updated = {}
+        if hk_values_list:
+            for i, (depth_range, _) in enumerate(hk_profile.items()):
+                if i < len(hk_values_list):
+                    hk_profile_updated[depth_range] = hk_values_list[i]
+                else:
+                    hk_profile_updated[depth_range] = list(hk_profile.values())[i]
+        else:
+            hk_profile_updated = hk_profile
+        
+        # Debug: Print parameters being used in optimization
+        print(f"DEBUG: Optimization iteration - hk_profile: {hk_profile_updated}, sy: {sy}, ss: {ss}")
         
         # Run forward model with optimized parameters and get objective value
         objective_value = run_forward_model_for_optimization(config, hk_profile=hk_profile_updated, sy=sy, ss=ss)
@@ -786,7 +795,7 @@ def run_optimization(config):
     
     # Run optimization
     result = fmin(lambda x: objective_function(x, config), initial_guess, maxiter=4, disp=True)
-    
+    print(result)
     # Process and print optimal results
     process_optimization_results(config, result, params_to_optimize, flags)
     
@@ -800,29 +809,50 @@ def process_optimization_results(config, result, params_to_optimize, flags):
     hk_df = config.loader.get_hydraulic_conductivity_data()
     hk_profile = config.get_hydraulic_conductivity_profile()
     
-    # Extract optimal parameters
-    hk_results = result[:len(hk_profile)]  # First N results for hk values
-    remaining_results = result[len(hk_profile):]
+    # Extract optimal parameters based on what was actually optimized
+    param_idx = 0
+    hk_results = []
+    sy_result = config.loader.at('Specific Yield (Sy)', 'Value')
+    ss_result = config.loader.at('Specific Storage (Ss)', 'Value')
     
-    # Get sy and ss results
-    sy_result = remaining_results[0] if flags['solve_Sy'] == 'Yes' else config.loader.at('Specific Yield (Sy)', 'Value')
-    ss_result = remaining_results[1] if flags['solve_Ss'] == 'Yes' else config.loader.at('Specific Storage (Ss)', 'Value')
+    # Extract hk values if they were optimized
+    if flags['solve_Hk'] == 'Yes':
+        hk_results = result[param_idx:param_idx + len(hk_profile)]
+        param_idx += len(hk_profile)
+    
+    # Extract sy value if it was optimized
+    if flags['solve_Sy'] == 'Yes':
+        sy_result = result[param_idx]
+        param_idx += 1
+    
+    # Extract ss value if it was optimized
+    if flags['solve_Ss'] == 'Yes':
+        ss_result = result[param_idx]
     
     # Create hydraulic conductivity results DataFrame
-    hk_results_df = pd.DataFrame({
-        'Layer': [f'Layer {i+1}' for i in range(len(hk_results))],
-        'Optimal Hydraulic Conductivity [m/day]': hk_results
-    })
+    if hk_results:
+        hk_results_df = pd.DataFrame({
+            'Layer': [f'Layer {i+1}' for i in range(len(hk_results))],
+            'Optimal Hydraulic Conductivity [m/day]': hk_results
+        })
+    else:
+        hk_results_df = pd.DataFrame({
+            'Layer': [f'Layer {i+1}' for i in range(len(hk_profile))],
+            'Optimal Hydraulic Conductivity [m/day]': list(hk_profile.values())
+        })
     
     # Create results dictionary
     results_dict = {}
     
-    # Recreate hk_profile from hk_results
+    # Recreate hk_profile from hk_results or use original
     hk_profile_optimized = {}
-    for index, row in hk_df.iterrows():
-        depth_range = (row['Layer Top Level [m]'], row['Layer Bottom Level [m]'])
-        hk_value = hk_results[index] if index < len(hk_results) else row['Hydraulic Conductivity [m/day]']
-        hk_profile_optimized[depth_range] = hk_value
+    if hk_results:
+        for index, row in hk_df.iterrows():
+            depth_range = (row['Layer Top Level [m]'], row['Layer Bottom Level [m]'])
+            hk_value = hk_results[index] if index < len(hk_results) else row['Hydraulic Conductivity [m/day]']
+            hk_profile_optimized[depth_range] = hk_value
+    else:
+        hk_profile_optimized = hk_profile
     
     results_dict['hk_profile'] = hk_profile_optimized
     
@@ -864,6 +894,14 @@ def process_optimization_results(config, result, params_to_optimize, flags):
     print(hk_results_df)
     print("====================================================================")
     print(other_results_df)
+    print("====================================================================")
+    
+    # Debug: Print the optimal parameters being used
+    print("====================================================================")
+    print("DEBUG: Optimal parameters being used for final forward run:")
+    print(f"hk_profile_optimized: {hk_profile_optimized}")
+    print(f"sy_result: {sy_result}")
+    print(f"ss_result: {ss_result}")
     print("====================================================================")
     
     # Run forward model with optimal parameters
