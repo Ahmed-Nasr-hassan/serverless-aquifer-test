@@ -4,8 +4,8 @@ ModelConfig class for managing model configuration and parameters
 """
 
 import os
-from JsonDataLoader import JsonDataLoader
-from Units import UnitConverter
+from .JsonDataLoader import JsonDataLoader
+from .Units import UnitConverter
 
 
 class ModelConfig:

@@ -6,15 +6,10 @@ start_time = time.time()
 # Import necessary libraries
 import numpy as np
 import flopy
-from VerticalRefinment import VerticalRefinement
-from conversions import ParametersConversions
+from classes import VerticalRefinement, ParametersConversions, UnitConverter, ObservedVsSimulatedPlotter, ColumnCalculator, DrawdownInterpolation
 import pandas as pd
-from Units import UnitConverter
-from Plotter import ObservedVsSimulatedPlotter
 import os
-from ColumnCalculator import ColumnCalculator
 from scipy.optimize import fmin
-from DrawdownInterpolation import DrawdownInterpolation
 
 converter = UnitConverter()
 

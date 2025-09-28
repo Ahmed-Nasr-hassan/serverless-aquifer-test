@@ -3,7 +3,7 @@ import flopy.utils
 import pandas as pd
 import numpy as np
 import os
-from Units import UnitConverter
+from .Units import UnitConverter
 converter = UnitConverter()
 
 class ObservedVsSimulatedPlotter:

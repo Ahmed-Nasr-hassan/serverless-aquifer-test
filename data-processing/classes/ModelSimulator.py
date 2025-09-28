@@ -12,12 +12,12 @@ import os
 from scipy.optimize import fmin
 
 # Local imports
-from VerticalRefinment import VerticalRefinement
-from conversions import ParametersConversions
-from Units import UnitConverter
-from Plotter import ObservedVsSimulatedPlotter
-from ColumnCalculator import ColumnCalculator
-from DrawdownInterpolation import DrawdownInterpolation
+from .VerticalRefinment import VerticalRefinement
+from .conversions import ParametersConversions
+from .Units import UnitConverter
+from .Plotter import ObservedVsSimulatedPlotter
+from .ColumnCalculator import ColumnCalculator
+from .DrawdownInterpolation import DrawdownInterpolation
 
 class ModelSimulator:
     """Class containing all simulation-related functions"""
@@ -551,8 +551,12 @@ class ModelSimulator:
         # IMS
         ims = self.create_ims_package(sim)
         
-        # Run simulation
-        self.run_simulation(sim)
+        # Run simulation with error handling
+        try:
+            self.run_simulation(sim)
+        except Exception as e:
+            print(f"MODFLOW simulation failed: {str(e)}")
+            return 1e6  # Return large penalty for failed simulation
         
         # Calculate objective function value
         return self.calculate_objective_value(obs_wells_data, time_params['analysis_period'], 
@@ -670,6 +674,7 @@ class ModelSimulator:
         """Run parameter optimization"""
         # Get optimization flags
         flags = self.config.get_optimization_flags()
+        print(f"DEBUG: Optimization flags: {flags}")
         
         # Setup optimization parameters
         params_to_optimize = []
@@ -688,6 +693,13 @@ class ModelSimulator:
         if flags['solve_Ss'] == 'Yes':
             params_to_optimize.append('ss')
             initial_guess.append(self.config.loader.at('Specific Storage (Ss)', 'Value'))
+        
+        print(f"DEBUG: Parameters to optimize: {params_to_optimize}")
+        print(f"DEBUG: Initial guess: {initial_guess}")
+        
+        if not initial_guess:
+            print("ERROR: No parameters selected for optimization!")
+            return None
         
         # Run optimization
         result = fmin(lambda x: self.objective_function(x), initial_guess, maxiter=4, disp=True)

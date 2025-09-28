@@ -6,8 +6,7 @@ Configuration management has been moved to ModelConfig class
 """
 
 import time
-from ModelSimulator import ModelSimulator
-from ModelConfig import ModelConfig
+from classes import ModelSimulator, ModelConfig
 
 
 def main():
