@@ -56,10 +56,22 @@ class ModelSimulator:
         hk_values = []
         for i in range(len(top)):
             layer_midpoint = (top[i] + bottom[i]) / 2
+            hk_assigned = False
             for depth_range, hk_value in hk_profile_m_sec.items():
+                # Check if layer midpoint falls within the depth range
+                # depth_range[0] is top level, depth_range[1] is bottom level
+                # For negative depths: top >= midpoint > bottom (e.g., 0 >= -142.34 > -700)
                 if depth_range[0] >= layer_midpoint > depth_range[1]:
                     hk_values.append(hk_value)
+                    hk_assigned = True
                     break
+            
+            # If no match found, use the first available hk value as default
+            if not hk_assigned:
+                if hk_profile_m_sec:
+                    hk_values.append(list(hk_profile_m_sec.values())[0])
+                else:
+                    hk_values.append(1e-6)  # Default very low conductivity
         
         # Calculate converted parameters
         par = ParametersConversions(col_centroids, delr, thickness)

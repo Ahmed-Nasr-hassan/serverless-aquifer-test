@@ -160,7 +160,7 @@
       },
       "data_files": {
         "Observed Data": {
-          "value": "Al_Monera.csv"
+          "value": "observation_data.json"
         }
       },
       "simulation_settings": {

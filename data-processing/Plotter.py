@@ -55,13 +55,38 @@ class ObservedVsSimulatedPlotter:
             self.avg_head.append(average_drawdown)
             
             # Read real observed data
-            # Read the CSV file into a DataFrame
-            df = pd.read_csv(self.obs_path)
-        
-            # Extract the time and drawdown (DD) columns
-            obs_time_series = df[["Time", "DD"]].values.tolist()
-            self.observed_time = [converter.minutes_to_sec(row[0]) for row in obs_time_series]
-            self.observed_DD = [row[1] for row in obs_time_series]
+            if self.obs_path.endswith('.json'):
+                # Read from JSON file
+                import json
+                with open(self.obs_path, 'r') as f:
+                    obs_json_data = json.load(f)
+                
+                # Find the well data (assuming single well for now)
+                well_data = None
+                for well_id, well_info in obs_json_data['observation_wells'].items():
+                    if well_id == self.well_id:
+                        well_data = well_info
+                        break
+                
+                if well_data:
+                    # Extract time and drawdown data from dictionary structure
+                    times = well_data['data']['time_minutes']
+                    drawdowns = well_data['data']['drawdown']
+                    
+                    self.observed_time = [converter.minutes_to_sec(t) for t in times]
+                    self.observed_DD = drawdowns
+                else:
+                    # Fallback to empty data if well not found
+                    self.observed_time = []
+                    self.observed_DD = []
+            else:
+                # Read the CSV file into a DataFrame (fallback)
+                df = pd.read_csv(self.obs_path)
+            
+                # Extract the time and drawdown (DD) columns
+                obs_time_series = df[["Time", "DD"]].values.tolist()
+                self.observed_time = [converter.minutes_to_sec(row[0]) for row in obs_time_series]
+                self.observed_DD = [row[1] for row in obs_time_series]
         
     
     def plot_obs_simulated(self):
