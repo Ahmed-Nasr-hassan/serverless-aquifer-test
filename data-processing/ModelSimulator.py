@@ -18,8 +18,6 @@ from Units import UnitConverter
 from Plotter import ObservedVsSimulatedPlotter
 from ColumnCalculator import ColumnCalculator
 from DrawdownInterpolation import DrawdownInterpolation
-from JsonDataLoader import JsonDataLoader
-
 
 class ModelSimulator:
     """Class containing all simulation-related functions"""
