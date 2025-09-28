@@ -51,7 +51,12 @@ class ObservedVsSimulatedPlotter:
 
                 
             # Calculate and store the average drawdown for all layers
-            average_drawdown = sum(self.drawdown_curves[i][-1] for i in range(len(self.screen_layer_indices))) / len(self.screen_layer_indices)
+            if len(self.screen_layer_indices) > 0:
+                average_drawdown = sum(self.drawdown_curves[i][-1] for i in range(len(self.screen_layer_indices))) / len(self.screen_layer_indices)
+            else:
+                # Fallback if no screen layers found
+                print(f"Warning: No screen layers found for well {self.well_id}")
+                average_drawdown = 0.0
             self.avg_head.append(average_drawdown)
             
             # Read real observed data

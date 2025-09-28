@@ -197,9 +197,10 @@ class ModelSimulator:
             if obs_col_id is None:
                 continue
             
-            # Find screen layer indices
+            # Find screen layer indices - layers that intersect with the screen interval
             screen_layer_indices = [lay for lay, (lay_top, lay_bottom) in enumerate(zip(top, bottom))
-                                    if lay_top <= obs_sc_top and lay_bottom >= obs_sc_bottom]
+                                    if lay_top > obs_sc_bottom and lay_bottom < obs_sc_top]
+            
             
             screen_layer_indices_dict[well_id] = screen_layer_indices
             
