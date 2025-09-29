@@ -167,7 +167,7 @@ def run_forward_model(**kwargs):
       
     # Path for the workspace and mf6.exe
     workspace = 'workspace'  # Specify your desired directory path
-    mf6_exe = "./mf6"  # Path to mf6.exe
+    mf6_exe = "./bin/mf6"  # Path to mf6.exe
 
     # Create a MODFLOW 6 simulation object
     sim = flopy.mf6.MFSimulation(
@@ -764,7 +764,7 @@ def objective_function(parameter_values):
       
     # Path for the workspace and mf6.exe
     workspace = 'workspace'  # Specify your desired directory path
-    mf6_exe = "./mf6"  # Path to mf6.exe
+    mf6_exe = "./bin/mf6"  # Path to mf6.exe
 
     # Create a MODFLOW 6 simulation object
     sim = flopy.mf6.MFSimulation(

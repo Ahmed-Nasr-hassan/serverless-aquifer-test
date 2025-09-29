@@ -15,7 +15,7 @@ class ModelConfig:
         self.loader = JsonDataLoader(json_file_path)
         self.converter = UnitConverter()
         self.workspace = 'workspace'
-        self.mf6_exe = "./mf6"
+        self.mf6_exe = "./bin/mf6"
         
         # Create Results folder if it doesn't exist
         os.makedirs('Results', exist_ok=True)
