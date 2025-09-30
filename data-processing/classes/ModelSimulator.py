@@ -298,10 +298,14 @@ class ModelSimulator:
         print(f"Radius of Influence: {radius_influence} meters")
         
         # Process drawdown interpolation
-        self.process_drawdown_interpolation(observed_DD_dict, observed_time_dict, simulated_DD_dict,
+        interpolation_results = self.process_drawdown_interpolation(observed_DD_dict, observed_time_dict, simulated_DD_dict,
                                          simulated_times, analysis_period, pumping_length_sec)
         
-        return plotter, simulated_times
+        # Generate JSON output
+        json_results = self.generate_json_results(plotter, simulated_times, radius_influence, 
+                                                interpolation_results, analysis_period, pumping_length_sec)
+        
+        return plotter, simulated_times, json_results
 
     def process_drawdown_interpolation(self, observed_DD_dict, observed_time_dict, simulated_DD_dict,
                                      simulated_times, analysis_period, pumping_length_sec):
@@ -330,6 +334,7 @@ class ModelSimulator:
         
         # Process each well
         output_excel_basepath = self.get_output_path(analysis_period)
+        interpolation_results = {}
         
         for well_id in final_observed_time_dict.keys():
             dd_interpolator = DrawdownInterpolation(
@@ -349,6 +354,17 @@ class ModelSimulator:
             output_excel_path = output_excel_basepath + f"{well_id}.xlsx"
             dd_interpolator.save_results_to_excel(output_excel_path)
             print(f"Results for {well_id} saved to {output_excel_path}")
+            
+            # Store results for JSON output
+            interpolation_results[well_id] = {
+                'rmse': round(weighted_rmse, 4),
+                'total_residual_error': round(total_residual_error, 4),
+                'interpolated_times': dd_interpolator.interpolated_times.tolist() if dd_interpolator.interpolated_times is not None else [],
+                'interpolated_observed_drawdown': dd_interpolator.interpolated_observed_drawdown.tolist() if dd_interpolator.interpolated_observed_drawdown is not None else [],
+                'interpolated_simulated_drawdown': dd_interpolator.interpolated_simulated_drawdown.tolist() if dd_interpolator.interpolated_simulated_drawdown is not None else []
+            }
+        
+        return interpolation_results
 
     def get_output_path(self, analysis_period):
         """Get output file path based on analysis period"""
@@ -358,6 +374,89 @@ class ModelSimulator:
             return 'Results/DD_vs_Time_Recovery_'
         else:
             return 'Results/DD_vs_Time_'
+    
+    def _format_json_compact(self, obj, indent=0):
+        """Custom JSON formatter that puts ALL lists on one line"""
+        import json
+        
+        if isinstance(obj, list):
+            # ALL lists on one line, regardless of length
+            items = []
+            for item in obj:
+                if isinstance(item, (list, dict)):
+                    items.append(self._format_json_compact(item, indent + 1))
+                else:
+                    items.append(json.dumps(item, separators=(',', ': ')))
+            return '[' + ','.join(items) + ']'
+        elif isinstance(obj, dict):
+            items = []
+            for key, value in obj.items():
+                if isinstance(value, list):
+                    items.append(f'"{key}":{self._format_json_compact(value, indent + 1)}')
+                else:
+                    items.append(f'"{key}":{self._format_json_compact(value, indent + 1)}')
+            return '{\n' + ',\n'.join('  ' * (indent + 1) + item for item in items) + '\n' + '  ' * indent + '}'
+        else:
+            return json.dumps(obj, separators=(',', ': '))
+
+    def generate_json_results(self, plotter, simulated_times, radius_influence, 
+                            interpolation_results, analysis_period, pumping_length_sec):
+        """Generate comprehensive JSON output with all simulation results"""
+        import json
+        from datetime import datetime
+        
+        # Convert simulated times to list for JSON serialization
+        simulated_times_list = simulated_times.tolist() if hasattr(simulated_times, 'tolist') else list(simulated_times)
+        
+        # Build results structure
+        results = {
+            'metadata': {
+                'simulation_type': analysis_period,
+                'pumping_length_seconds': pumping_length_sec,
+                'generated_at': datetime.now().isoformat(),
+                'total_simulation_time_steps': len(simulated_times_list)
+            },
+            'summary': {
+                'radius_of_influence_meters': radius_influence,
+                'total_wells_analyzed': len(plotter)
+            },
+            'simulation_times': simulated_times_list,
+            'wells': {}
+        }
+        
+        # Process each well's results
+        for well_id, current_plotter in plotter.items():
+            # Get drawdown data
+            simulated_DD, observed_DD, observed_time = current_plotter.get_obs_DD()
+            
+            # Get head vs distance data
+            avg_head_at_depth = getattr(current_plotter, 'avg_head_at_depth', [])
+            
+            # Get interpolation results for this well
+            well_interpolation = interpolation_results.get(well_id, {})
+            
+            # Build well data structure
+            well_data = {
+                'well_id': well_id,
+                'distance_from_pumping_well_meters': current_plotter.distance,
+                'simulation_results': {
+                    'simulated_drawdown_meters': simulated_DD,
+                    'observed_drawdown_meters': observed_DD,
+                    'observed_time_seconds': observed_time,
+                    'avg_head_at_distance_meters': avg_head_at_depth
+                },
+                'interpolation_results': well_interpolation,
+                'files_generated': {
+                    'drawdown_comparison_plot': f'Results/drawdown_comparison_{well_id}.png',
+                    'head_vs_distance_plot': f'Results/avg_head_vs_distance_{well_id}.png',
+                    'radius_influence_data': f'Results/radius_influence_{well_id}.xlsx',
+                    'interpolated_data': f'Results/DD_vs_Time_{well_id}.xlsx'
+                }
+            }
+            
+            results['wells'][well_id] = well_data
+        
+        return results
 
     def run_forward_model(self, hk_profile=None, sy=None, ss=None, **kwargs):
         """Run forward model simulation"""
@@ -433,10 +532,18 @@ class ModelSimulator:
         print("MODFLOW 6 simulation completed successfully.")
         
         # Process results
-        self.process_simulation_results(obs_wells_data, time_params['analysis_period'], 
+        plotter, simulated_times, json_results = self.process_simulation_results(obs_wells_data, time_params['analysis_period'], 
                                       pumping_length_sec, col_centroids, geometry_params['col_length'], 
                                       self.config.workspace, geometry_params['starting_head'],
                                       screen_layer_indices_dict, cumulative_distances)
+        
+        # Save JSON results to file
+        import json
+        with open('Results/simulation_results.json', 'w') as f:
+            f.write(self._format_json_compact(json_results))
+        print("JSON results saved to Results/simulation_results.json")
+        
+        return json_results
 
     def objective_function(self, parameter_values):
         """Objective function for optimization"""
@@ -705,10 +812,10 @@ class ModelSimulator:
         result = fmin(lambda x: self.objective_function(x), initial_guess, maxiter=4, disp=True)
         print(result)
         # Process and print optimal results
-        self.process_optimization_results(result, params_to_optimize, flags)
+        json_results = self.process_optimization_results(result, params_to_optimize, flags)
         
         print("Optimization completed.")
-        return result
+        return json_results
 
     def process_optimization_results(self, result, params_to_optimize, flags):
         """Process and print optimization results"""
@@ -813,4 +920,33 @@ class ModelSimulator:
         
         # Run forward model with optimal parameters
         print("Running forward model with optimal parameters...")
-        self.run_forward_model(**results_dict)
+        json_results = self.run_forward_model(**results_dict)
+        
+        # Convert hk_profile tuple keys to string keys for JSON serialization
+        hk_profile_json = {}
+        for (top, bottom), value in hk_profile_optimized.items():
+            key = f"layer_{top}m_to_{bottom}m"
+            hk_profile_json[key] = value
+        
+        # Add optimization results to JSON output
+        json_results['optimization_results'] = {
+            'parameters_optimized': params_to_optimize,
+            'optimal_values': {
+                'hk_profile': hk_profile_json,
+                'specific_yield': sy_result if flags['solve_Sy'] == 'Yes' else None,
+                'specific_storage': ss_result if flags['solve_Ss'] == 'Yes' else None
+            },
+            'files_generated': {
+                'hk_results': output_excel_path_hk,
+                'other_results': output_excel_path_other,
+                'simulation_results': 'Results/simulation_results.json'
+            }
+        }
+        
+        # Save updated JSON results
+        import json
+        with open('Results/optimization_results.json', 'w') as f:
+            f.write(self._format_json_compact(json_results))
+        print("Optimization JSON results saved to Results/optimization_results.json")
+        
+        return json_results

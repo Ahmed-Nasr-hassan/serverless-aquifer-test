@@ -28,11 +28,36 @@ def main():
     if run_type.startswith("Forward Run"):
         # Run forward model
         hk_profile = config.get_hydraulic_conductivity_profile()
-        simulator.run_forward_model(hk_profile=hk_profile, 
+        json_results = simulator.run_forward_model(hk_profile=hk_profile, 
                                    sy=basic_params['sy'], ss=basic_params['ss'])
     else:
         # Run optimization
-        simulator.run_optimization()
+        json_results = simulator.run_optimization()
+    
+    # Print JSON results summary
+    if json_results:
+        print("\n" + "="*60)
+        print("SIMULATION RESULTS SUMMARY")
+        print("="*60)
+        print(f"Simulation Type: {json_results['metadata']['simulation_type']}")
+        print(f"Radius of Influence: {json_results['summary']['radius_of_influence_meters']} meters")
+        print(f"Total Wells Analyzed: {json_results['summary']['total_wells_analyzed']}")
+        
+        if 'optimization_results' in json_results:
+            print(f"Parameters Optimized: {', '.join(json_results['optimization_results']['parameters_optimized'])}")
+        
+        print("\nFiles Generated:")
+        for well_id, well_data in json_results['wells'].items():
+            print(f"  Well {well_id}:")
+            for file_type, file_path in well_data['files_generated'].items():
+                print(f"    {file_type}: {file_path}")
+        
+        if 'optimization_results' in json_results:
+            print("  Optimization Results:")
+            for file_type, file_path in json_results['optimization_results']['files_generated'].items():
+                print(f"    {file_type}: {file_path}")
+        
+        print("="*60)
     
     # Calculate and print elapsed time
     end_time = time.time()

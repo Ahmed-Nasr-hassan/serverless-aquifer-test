@@ -191,7 +191,7 @@
       },
       "simulation_settings": {
         "Choose Type of Simulation": {
-          "value": "Forward"
+          "value": "Calibration"
         },
         "Hydraulic Conductivity Flag": {
           "value": "Yes"
