@@ -173,19 +173,11 @@ class JsonDataLoader:
     
     def get_observation_wells_data(self):
         """Get observation wells data as a pandas DataFrame"""
-        # Load observation data from JSON file
-        import json
-        import os
-        
-        obs_data_file = self.at('Observed Data', 'Value')
-        
-        # Check if it's a JSON file
-        if obs_data_file.endswith('.json'):
-            with open(obs_data_file, 'r') as f:
-                obs_json_data = json.load(f)
-            
+        # Check if observation data is integrated in the main JSON file
+        if 'observation_data' in self.data['data']['model_inputs']:
+            # Read from integrated observation data
             obs_data = []
-            for well_id, well_data in obs_json_data['observation_wells'].items():
+            for well_id, well_data in self.data['data']['model_inputs']['observation_data']['observation_wells'].items():
                 obs_data.append({
                     'Well ID': well_data['well_id'],
                     'Observation Well Distance (m)': well_data['distance_from_well'],
@@ -195,43 +187,75 @@ class JsonDataLoader:
             
             return pd.DataFrame(obs_data)
         else:
-            # Fallback to original CSV-based approach
-            obs_data = []
+            # Fallback to loading from separate JSON file
+            import json
+            import os
             
-            # Get observation well IDs and distances
-            well_ids = self.at('Observation Wells', 'Value')
-            distances = self.at('Observation Well Distance (m)', 'Value')
-            top_levels = self.at('Observation Top Screen Level (m)', 'Value')
-            bottom_levels = self.at('Observation Bottom Screen Level (m)', 'Value')
+            obs_data_file = self.at('Observed Data', 'Value')
             
-            # Handle multiple wells if they exist
-            if isinstance(well_ids, str) and well_ids.startswith('OBS'):
-                # Single well case
-                obs_data.append({
-                    'Well ID': well_ids,
-                    'Observation Well Distance (m)': distances,
-                    'Observation Top Screen Level (m)': top_levels,
-                    'Observation Bottom Screen Level (m)': bottom_levels
-                })
-            
-            return pd.DataFrame(obs_data)
+            # Check if it's a JSON file
+            if obs_data_file.endswith('.json'):
+                with open(obs_data_file, 'r') as f:
+                    obs_json_data = json.load(f)
+                
+                obs_data = []
+                for well_id, well_data in obs_json_data['observation_wells'].items():
+                    obs_data.append({
+                        'Well ID': well_data['well_id'],
+                        'Observation Well Distance (m)': well_data['distance_from_well'],
+                        'Observation Top Screen Level (m)': well_data['top_screen_level'],
+                        'Observation Bottom Screen Level (m)': well_data['bottom_screen_level']
+                    })
+                
+                return pd.DataFrame(obs_data)
+            else:
+                # Fallback to original CSV-based approach
+                obs_data = []
+                
+                # Get observation well IDs and distances
+                well_ids = self.at('Observation Wells', 'Value')
+                distances = self.at('Observation Well Distance (m)', 'Value')
+                top_levels = self.at('Observation Top Screen Level (m)', 'Value')
+                bottom_levels = self.at('Observation Bottom Screen Level (m)', 'Value')
+                
+                # Handle multiple wells if they exist
+                if isinstance(well_ids, str) and well_ids.startswith('OBS'):
+                    # Single well case
+                    obs_data.append({
+                        'Well ID': well_ids,
+                        'Observation Well Distance (m)': distances,
+                        'Observation Top Screen Level (m)': top_levels,
+                        'Observation Bottom Screen Level (m)': bottom_levels
+                    })
+                
+                return pd.DataFrame(obs_data)
     
     def get_observation_well_files(self):
         """Get observation well file paths"""
-        obs_well_path = self.at('Observation Well Path', 'Value')
-        observed_data_file = self.at('Observed Data', 'Value')
-        
-        # If it's a JSON file, return the JSON file path for each well
-        if observed_data_file.endswith('.json'):
-            import json
-            with open(observed_data_file, 'r') as f:
-                obs_json_data = json.load(f)
-            
-            # Return JSON file path for each well
-            return {well_id: observed_data_file for well_id in obs_json_data['observation_wells'].keys()}
+        # Check if observation data is integrated in the main JSON file
+        if 'observation_data' in self.data['data']['model_inputs']:
+            # Return the integrated observation data for each well
+            well_files = {}
+            for well_id in self.data['data']['model_inputs']['observation_data']['observation_wells'].keys():
+                # Return the integrated data as a dictionary that can be used by the Plotter
+                well_files[well_id] = self.data['data']['model_inputs']['observation_data']
+            return well_files
         else:
-            # Return as dictionary similar to the original Excel reading
-            return {obs_well_path: observed_data_file}
+            # Fallback to loading from separate JSON file
+            obs_well_path = self.at('Observation Well Path', 'Value')
+            observed_data_file = self.at('Observed Data', 'Value')
+            
+            # If it's a JSON file, return the JSON file path for each well
+            if observed_data_file.endswith('.json'):
+                import json
+                with open(observed_data_file, 'r') as f:
+                    obs_json_data = json.load(f)
+                
+                # Return JSON file path for each well
+                return {well_id: observed_data_file for well_id in obs_json_data['observation_wells'].keys()}
+            else:
+                # Return as dictionary similar to the original Excel reading
+                return {obs_well_path: observed_data_file}
     
     def to_dataframe(self):
         """Convert the flat data to a pandas DataFrame"""
