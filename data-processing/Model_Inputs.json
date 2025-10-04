@@ -11,36 +11,6 @@
     "user_id":"f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
     "model_id":"a55d4fea-8wq2-6ds3-a765-00a5c91e1bf2",
     "model_inputs": {
-      "general": {
-        "Radial Discretization": {
-          "value": null
-        },
-        "Vertical Discritization": {
-          "value": null
-        },
-        "Pumping Well": {
-          "value": null
-        },
-        "Initial and Boundary Conditions": {
-          "value": null
-        },
-        "Stress Periods and Time Steps": {
-          "value": null
-        },
-        "Hydraulic Parameters": {
-          "value": null
-        },
-        "Observation Well Path": {
-          "value": "OBS-1",
-          "unit": "No"
-        },
-        "Type of Simulation": {
-          "value": null
-        },
-        "Solve for Parameter Estimation": {
-          "value": null
-        }
-      },
       "radial_discretization": {
         "Boundary distance from pumping well": {
           "value": 500,
@@ -193,7 +163,7 @@
       },
       "simulation_settings": {
         "Choose Type of Simulation": {
-          "value": "Forward Run"
+          "value": "Calibration"
         },
         "Hydraulic Conductivity Flag": {
           "value": "Yes"

@@ -6,6 +6,9 @@ Configuration management has been moved to ModelConfig class
 """
 
 import time
+import json
+import boto3
+import os
 from classes import ModelSimulator, ModelConfig
 
 
@@ -65,12 +68,95 @@ def main():
 
     return json_results
 
+
+def lambda_handler(event, context):
+    """
+    AWS Lambda handler function
+    Processes SQS messages containing Model_Inputs.json data
+    """
+    try:
+        print(f"Lambda function started. Event: {json.dumps(event)}")
+        
+        # Initialize SQS client
+        sqs = boto3.client('sqs')
+        
+        # Process SQS records
+        for record in event.get('Records', []):
+            try:
+                # Parse SQS message body
+                message_body = json.loads(record['body'])
+                print(f"Processing message: {message_body}")
+                
+                # Extract Model_Inputs.json from message
+                model_inputs = message_body.get('Model_Inputs', {})
+                
+                if not model_inputs:
+                    print("No Model_Inputs found in message")
+                    continue
+                
+                # Add hydraulic_conductivity if missing
+                if 'hydraulic_conductivity' not in model_inputs:
+                    model_inputs['hydraulic_conductivity'] = [
+                        {
+                            "soil_material": "Sandstone",
+                            "layer_top_level_m": 0.0,
+                            "layer_bottom_level_m": -700.0,
+                            "hydraulic_conductivity_m_per_day": 0.9073948333333328
+                        }
+                    ]
+                
+                # Write Model_Inputs.json to file
+                with open('Model_Inputs.json', 'w') as f:
+                    json.dump(model_inputs, f, indent=2)
+                
+                print("Model_Inputs.json written to file")
+                
+                # Run simulation
+                result = main()
+                
+                # Return results
+                return {
+                    "statusCode": 200,
+                    "body": json.dumps({
+                        "message": "Simulation completed successfully",
+                        "results": result,
+                        "requestId": context.aws_request_id
+                    })
+                }
+                
+            except Exception as e:
+                print(f"Error processing record: {str(e)}")
+                return {
+                    "statusCode": 500,
+                    "body": json.dumps({
+                        "error": str(e),
+                        "requestId": context.aws_request_id
+                    })
+                }
+        
+        # If no records, run with default Model_Inputs.json
+        if not event.get('Records'):
+            print("No SQS records found, running with default Model_Inputs.json")
+            result = main()
+            return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": "Simulation completed successfully",
+                    "results": result,
+                    "requestId": context.aws_request_id
+                })
+            }
+            
+    except Exception as e:
+        print(f"Lambda function error: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "error": str(e),
+                "requestId": context.aws_request_id if context else "unknown"
+            })
+        }
+
+
 if __name__ == "__main__":
     main()
-
-# def lambda_handler(event, context):
-#     result = main()
-#     return {
-#         "statusCode": 200,
-#         "body": result
-#     }

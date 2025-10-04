@@ -5,3 +5,4 @@ data-processing/workspace/
 data-processing/Results/
 data-processing/mf6
 bin/
+terraform/*terraform*
