@@ -571,7 +571,7 @@ class ModelSimulator:
             
             # Update hk_profile with optimized values
             hk_profile_updated = {}
-            if hk_values_list:
+            if len(hk_values_list) > 0:
                 for i, (depth_range, _) in enumerate(hk_profile.items()):
                     if i < len(hk_values_list):
                         hk_profile_updated[depth_range] = hk_values_list[i]
@@ -839,7 +839,7 @@ class ModelSimulator:
             ss_result = result[param_idx]
         
         # Create hydraulic conductivity results DataFrame
-        if hk_results:
+        if len(hk_results) > 0:
             hk_results_df = pd.DataFrame({
                 'Layer': [f'Layer {i+1}' for i in range(len(hk_results))],
                 'Optimal Hydraulic Conductivity [m/day]': hk_results
@@ -855,7 +855,7 @@ class ModelSimulator:
         
         # Recreate hk_profile from hk_results or use original
         hk_profile_optimized = {}
-        if hk_results:
+        if len(hk_results) > 0:
             for index, row in hk_df.iterrows():
                 depth_range = (row['Layer Top Level [m]'], row['Layer Bottom Level [m]'])
                 hk_value = hk_results[index] if index < len(hk_results) else row['Hydraulic Conductivity [m/day]']
@@ -873,21 +873,7 @@ class ModelSimulator:
         
         # Create DataFrame for other results
         other_results_df = pd.DataFrame([{k: v for k, v in results_dict.items() if k != "hk_profile"}])
-        
-        # Get analysis period for file naming
-        analysis_period = self.config.loader.at('Analysis Period', 'Value')
-        
-        # Determine output file paths
-        base_output_excel_path = 'Results/Optimal_Values'
-        if analysis_period == "Pumping Only":
-            output_excel_path_hk = base_output_excel_path + '_Hk_Pumping.xlsx'
-            output_excel_path_other = base_output_excel_path + '_Pumping.xlsx'
-        elif analysis_period == "Recovery Only":
-            output_excel_path_hk = base_output_excel_path + '_Hk_Recovery.xlsx'
-            output_excel_path_other = base_output_excel_path + '_Recovery.xlsx'
-        else:
-            output_excel_path_hk = base_output_excel_path + '_Hk.xlsx'
-            output_excel_path_other = base_output_excel_path + '.xlsx'
+                
         
         # Skip Excel file generation - only print results
         print("======================================================================")
@@ -929,7 +915,6 @@ class ModelSimulator:
         }
         
         # Save updated JSON results
-        import json
         with open('Results/optimization_results.json', 'w') as f:
             f.write(self._format_json_compact(json_results))
         print("Optimization JSON results saved to Results/optimization_results.json")
