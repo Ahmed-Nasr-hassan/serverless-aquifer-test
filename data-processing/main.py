@@ -47,15 +47,10 @@ def main():
             print(f"Parameters Optimized: {', '.join(json_results['optimization_results']['parameters_optimized'])}")
         
         print("\nFiles Generated:")
-        for well_id, well_data in json_results['wells'].items():
-            print(f"  Well {well_id}:")
-            for file_type, file_path in well_data['files_generated'].items():
-                print(f"    {file_type}: {file_path}")
-        
         if 'optimization_results' in json_results:
-            print("  Optimization Results:")
-            for file_type, file_path in json_results['optimization_results']['files_generated'].items():
-                print(f"    {file_type}: {file_path}")
+            print(f"  JSON Results: {json_results['optimization_results']['files_generated']['json_results']}")
+        else:
+            print(f"  JSON Results: Results/simulation_results.json")
         
         print("="*60)
     

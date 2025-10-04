@@ -219,6 +219,32 @@ class ObservedVsSimulatedPlotter:
         
         return self.avg_head_at_depth
     
+    def _calculate_avg_head_at_depth(self):
+        """Calculate average head at depth data without generating plot"""
+        # Load the heads data from the head file
+        head_file = flopy.utils.HeadFile(self.head_file_path)
+
+        last_time_step = min(head_file.get_times(), key= lambda x:abs(self.pumping_end_time-x))
+    
+        # Initialize a list to store head data for all columns
+        head_at_depth=[]
+        for lay in self.screen_layer_indices:
+            # Extract the flows at the last time step for the specified layer
+            head_data = head_file.get_data(totim=last_time_step)
+            head_values = head_data[lay, 0, :]  # Get head values for all cells in the layer
+    
+            # Store the head values for the layer in the list
+            for i in range(len(head_values)):
+                if i >= len(head_at_depth):
+                    head_at_depth.append([head_values[i]])
+                else:
+                    head_at_depth[i].append(head_values[i])
+    
+        # Calculate the average head vertically for each column
+        self.avg_head_at_depth = [sum(column) / len(column) for column in head_at_depth]
+        
+        return self.avg_head_at_depth
+    
     def save_avg_head_vs_distance_to_excel(self, filepath):
         # Prepare the data as a dictionary
         data = {

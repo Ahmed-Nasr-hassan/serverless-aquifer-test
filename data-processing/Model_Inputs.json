@@ -211,8 +211,14 @@
       {
         "soil_material": "Sandstone",
         "layer_top_level_m": 0.0,
-        "layer_bottom_level_m": -700.0,
+        "layer_bottom_level_m": -350.0,
         "hydraulic_conductivity_m_per_day": 0.9073948333333328
+      },
+      {
+        "soil_material": "Sand",
+        "layer_top_level_m": -350.0,
+        "layer_bottom_level_m": -700.0,
+        "hydraulic_conductivity_m_per_day": 50
       }
     ]
   }

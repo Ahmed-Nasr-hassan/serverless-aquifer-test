@@ -282,15 +282,15 @@ class ModelSimulator:
         observed_time_dict = {}
         
         for well_id, current_plotter in plotter.items():
-            current_plotter.plot_obs_simulated()
+            # Skip plot generation - only get data for JSON
             simulated_DD, observed_DD, observed_time = current_plotter.get_obs_DD()
             
             simulated_DD_dict[well_id] = simulated_DD
             observed_DD_dict[well_id] = observed_DD
             observed_time_dict[well_id] = observed_time
             
-            current_plotter.plot_avg_head_vs_distance()
-            current_plotter.save_avg_head_vs_distance_to_excel(f'Results/radius_influence_{well_id}.xlsx')
+            # Calculate head vs distance data for JSON (without generating plot)
+            current_plotter._calculate_avg_head_at_depth()
         
         # Calculate radius of influence
         first_plotter = next(iter(plotter.values()))
@@ -351,9 +351,7 @@ class ModelSimulator:
             print(f"RMSE for {well_id}: {round(weighted_rmse, 2)}")
             print(f"Total Residual Error for {well_id}: {round(total_residual_error, 2)}")
             
-            output_excel_path = output_excel_basepath + f"{well_id}.xlsx"
-            dd_interpolator.save_results_to_excel(output_excel_path)
-            print(f"Results for {well_id} saved to {output_excel_path}")
+            # Skip Excel file generation - only store data for JSON
             
             # Store results for JSON output
             interpolation_results[well_id] = {
@@ -447,10 +445,7 @@ class ModelSimulator:
                 },
                 'interpolation_results': well_interpolation,
                 'files_generated': {
-                    'drawdown_comparison_plot': f'Results/drawdown_comparison_{well_id}.png',
-                    'head_vs_distance_plot': f'Results/avg_head_vs_distance_{well_id}.png',
-                    'radius_influence_data': f'Results/radius_influence_{well_id}.xlsx',
-                    'interpolated_data': f'Results/DD_vs_Time_{well_id}.xlsx'
+                    'json_results': 'Results/simulation_results.json'
                 }
             }
             
@@ -894,16 +889,8 @@ class ModelSimulator:
             output_excel_path_hk = base_output_excel_path + '_Hk.xlsx'
             output_excel_path_other = base_output_excel_path + '.xlsx'
         
-        # Save results to Excel files
-        hk_results_df.to_excel(output_excel_path_hk, index=False)
+        # Skip Excel file generation - only print results
         print("======================================================================")
-        print(f"Hydraulic conductivity results saved to {output_excel_path_hk}")
-        
-        other_results_df.to_excel(output_excel_path_other, index=False)
-        print(f"Other results saved to {output_excel_path_other}")
-        
-        # Print the results
-        print("====================================================================")
         print("Optimal Parameter Values:")
         print(hk_results_df)
         print("====================================================================")
@@ -937,9 +924,7 @@ class ModelSimulator:
                 'specific_storage': ss_result if flags['solve_Ss'] == 'Yes' else None
             },
             'files_generated': {
-                'hk_results': output_excel_path_hk,
-                'other_results': output_excel_path_other,
-                'simulation_results': 'Results/simulation_results.json'
+                'json_results': 'Results/optimization_results.json'
             }
         }
         
