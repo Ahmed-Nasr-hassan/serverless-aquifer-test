@@ -366,12 +366,13 @@ class ModelSimulator:
 
     def get_output_path(self, analysis_period):
         """Get output file path based on analysis period"""
+        results_dir = '/tmp/Results' if os.environ.get('AWS_LAMBDA_FUNCTION_NAME') else 'Results'
         if analysis_period == "Pumping Only":
-            return 'Results/DD_vs_Time_Pumping_'
+            return f'{results_dir}/DD_vs_Time_Pumping_'
         elif analysis_period == "Recovery Only":
-            return 'Results/DD_vs_Time_Recovery_'
+            return f'{results_dir}/DD_vs_Time_Recovery_'
         else:
-            return 'Results/DD_vs_Time_'
+            return f'{results_dir}/DD_vs_Time_'
     
     def _format_json_compact(self, obj, indent=0):
         """Custom JSON formatter that puts ALL lists on one line"""
@@ -445,7 +446,7 @@ class ModelSimulator:
                 },
                 'interpolation_results': well_interpolation,
                 'files_generated': {
-                    'json_results': 'Results/simulation_results.json'
+                    'json_results': f'{"/tmp/Results" if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") else "Results"}/simulation_results.json'
                 }
             }
             
@@ -533,10 +534,12 @@ class ModelSimulator:
                                       screen_layer_indices_dict, cumulative_distances)
         
         # Save JSON results to file
+        results_dir = '/tmp/Results' if os.environ.get('AWS_LAMBDA_FUNCTION_NAME') else 'Results'
+        os.makedirs(results_dir, exist_ok=True)
         import json
-        with open('Results/simulation_results.json', 'w') as f:
+        with open(f'{results_dir}/simulation_results.json', 'w') as f:
             f.write(self._format_json_compact(json_results))
-        print("JSON results saved to Results/simulation_results.json")
+        print(f"JSON results saved to {results_dir}/simulation_results.json")
         
         return json_results
 
@@ -910,13 +913,15 @@ class ModelSimulator:
                 'specific_storage': ss_result if flags['solve_Ss'] == 'Yes' else None
             },
             'files_generated': {
-                'json_results': 'Results/optimization_results.json'
+                'json_results': f'{"/tmp/Results" if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") else "Results"}/optimization_results.json'
             }
         }
         
         # Save updated JSON results
-        with open('Results/optimization_results.json', 'w') as f:
+        results_dir = '/tmp/Results' if os.environ.get('AWS_LAMBDA_FUNCTION_NAME') else 'Results'
+        os.makedirs(results_dir, exist_ok=True)
+        with open(f'{results_dir}/optimization_results.json', 'w') as f:
             f.write(self._format_json_compact(json_results))
-        print("Optimization JSON results saved to Results/optimization_results.json")
+        print(f"Optimization JSON results saved to {results_dir}/optimization_results.json")
         
         return json_results

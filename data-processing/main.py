@@ -12,12 +12,12 @@ import os
 from classes import ModelSimulator, ModelConfig
 
 
-def main():
+def main(config_file="Model_Inputs.json"):
     """Main execution function"""
     start_time = time.time()
     
     # Initialize configuration
-    config = ModelConfig("Model_Inputs.json")
+    config = ModelConfig(config_file)
     
     # Get basic parameters
     basic_params = config.get_basic_parameters()
@@ -88,7 +88,7 @@ def lambda_handler(event, context):
                 print(f"Processing message: {message_body}")
                 
                 # Extract Model_Inputs.json from message
-                model_inputs = message_body.get('Model_Inputs', {})
+                model_inputs = message_body.get('model_inputs', {})
                 
                 if not model_inputs:
                     print("No Model_Inputs found in message")
@@ -105,14 +105,14 @@ def lambda_handler(event, context):
                         }
                     ]
                 
-                # Write Model_Inputs.json to file
-                with open('Model_Inputs.json', 'w') as f:
+                # Write Model_Inputs.json to /tmp/ directory (Lambda writable)
+                with open('/tmp/Model_Inputs.json', 'w') as f:
                     json.dump(model_inputs, f, indent=2)
                 
-                print("Model_Inputs.json written to file")
+                print("Model_Inputs.json written to /tmp/Model_Inputs.json")
                 
-                # Run simulation
-                result = main()
+                # Run simulation with the /tmp/ config file
+                result = main("/tmp/Model_Inputs.json")
                 
                 # Return results
                 return {

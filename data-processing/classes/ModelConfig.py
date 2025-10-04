@@ -14,11 +14,21 @@ class ModelConfig:
     def __init__(self, json_file_path="Model_Inputs.json"):
         self.loader = JsonDataLoader(json_file_path)
         self.converter = UnitConverter()
-        self.workspace = 'workspace'
-        self.mf6_exe = "./bin/mf6"
         
-        # Create Results folder if it doesn't exist
-        os.makedirs('Results', exist_ok=True)
+        # Check if running in Lambda (environment variables present)
+        if os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+            # Running in Lambda - use /tmp for writable directories
+            self.workspace = '/tmp/workspace'
+            self.mf6_exe = "/tmp/bin/mf6"
+            # Create writable directories
+            os.makedirs('/tmp/Results', exist_ok=True)
+            os.makedirs(self.workspace, exist_ok=True)
+        else:
+            # Running locally
+            self.workspace = 'workspace'
+            self.mf6_exe = "./bin/mf6"
+            # Create Results folder if it doesn't exist
+            os.makedirs('Results', exist_ok=True)
     
     def get_basic_parameters(self):
         """Get basic model parameters"""
