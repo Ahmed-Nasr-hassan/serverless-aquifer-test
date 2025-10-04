@@ -8,6 +8,8 @@
     "conversion_timestamp": "2025-09-27T14:31:21.770466"
   },
   "data": {
+    "user_id":"f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+    "model_id":"a55d4fea-8wq2-6ds3-a765-00a5c91e1bf2",
     "model_inputs": {
       "general": {
         "Radial Discretization": {

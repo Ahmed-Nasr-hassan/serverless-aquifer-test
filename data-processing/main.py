@@ -53,7 +53,6 @@ def main():
             print(f"  JSON Results: Results/simulation_results.json")
         
         print("="*60)
-    
     # Calculate and print elapsed time
     end_time = time.time()
     elapsed_time = round(end_time - start_time, 3)
@@ -64,6 +63,14 @@ def main():
     else:
         print(f"Elapsed time: {elapsed_time} seconds")
 
+    return json_results
 
 if __name__ == "__main__":
     main()
+
+# def lambda_handler(event, context):
+#     result = main()
+#     return {
+#         "statusCode": 200,
+#         "body": result
+#     }

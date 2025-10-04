@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.12-slim
+FROM public.ecr.aws/lambda/python:3.12
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Default command (can be overridden at runtime)
-CMD ["python3", "main.py"]
+CMD ["main.lambda_handler"]
