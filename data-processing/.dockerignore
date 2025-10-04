@@ -49,6 +49,3 @@ workspace/
 # Temporary files
 *.tmp
 *.temp
-
-# Ignore binaries here (copied explicitly in Dockerfile)
-bin/

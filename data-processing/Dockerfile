@@ -5,9 +5,11 @@ FROM public.ecr.aws/lambda/python:3.12
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-#Copying binaries to /tmp/ for Lambda execution:
-COPY ./bin  /tmp/bin
+# Copy executables into /var/task/bin
+COPY --chmod=755 ./bin /var/task/bin
 
+# Add /var/task/bin to PATH
+ENV PATH="/var/task/bin:${PATH}"
 # Install dependencies first (for better build caching)
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt

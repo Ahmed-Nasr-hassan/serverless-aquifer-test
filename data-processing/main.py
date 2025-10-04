@@ -105,9 +105,17 @@ def lambda_handler(event, context):
                         }
                     ]
                 
+                # Wrap the model_inputs in the expected structure for JsonDataLoader
+                wrapped_data = {
+                    "data": {
+                        "model_inputs": model_inputs,
+                        "hydraulic_conductivity": message_body.get('hydraulic_conductivity', [])
+                    }
+                }
+                
                 # Write Model_Inputs.json to /tmp/ directory (Lambda writable)
                 with open('/tmp/Model_Inputs.json', 'w') as f:
-                    json.dump(model_inputs, f, indent=2)
+                    json.dump(wrapped_data, f, indent=2)
                 
                 print("Model_Inputs.json written to /tmp/Model_Inputs.json")
                 

@@ -19,7 +19,7 @@ class ModelConfig:
         if os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
             # Running in Lambda - use /tmp for writable directories
             self.workspace = '/tmp/workspace'
-            self.mf6_exe = "/tmp/bin/mf6"
+            self.mf6_exe = "mf6"
             # Create writable directories
             os.makedirs('/tmp/Results', exist_ok=True)
             os.makedirs(self.workspace, exist_ok=True)
