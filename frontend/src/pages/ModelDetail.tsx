@@ -112,7 +112,21 @@ export default function ModelDetail() {
     const loadModel = async () => {
       try {
         setLoading(true)
-        // Mock model data - in real app this would come from API
+        
+        // First try to load from localStorage
+        const savedConfig = localStorage.getItem(`model-config-${id}`)
+        if (savedConfig) {
+          try {
+            const parsedConfig = JSON.parse(savedConfig)
+            setConfig(parsedConfig)
+            setLoading(false)
+            return
+          } catch (e) {
+            console.error('Failed to parse saved config:', e)
+          }
+        }
+        
+        // If no saved config, use default configuration
         const mockModel: ModelConfig = {
           name: `Model ${id}`,
           description: 'Aquifer simulation model configuration',
@@ -150,6 +164,13 @@ export default function ModelDetail() {
 
     loadModel()
   }, [isAuthenticated, id])
+
+  // Save config to localStorage whenever it changes
+  useEffect(() => {
+    if (config && id) {
+      localStorage.setItem(`model-config-${id}`, JSON.stringify(config))
+    }
+  }, [config, id])
 
   if (!isAuthenticated) {
     return (

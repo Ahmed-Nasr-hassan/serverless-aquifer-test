@@ -65,15 +65,13 @@ async def test_database():
         db.close()
 
 # Include routers
-from routers import simulation_router, data_router, optimization_router, well_router, model_input_router
+from routers.models import models_router
+from routers.simulation import simulation_router
 from auth.routes import auth_router
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
+app.include_router(models_router, prefix="/api/v1/models", tags=["models"])
 app.include_router(simulation_router, prefix="/api/v1/simulations", tags=["simulations"])
-app.include_router(data_router, prefix="/api/v1/aquifer-data", tags=["aquifer-data"])
-app.include_router(optimization_router, prefix="/api/v1/optimization-results", tags=["optimization-results"])
-app.include_router(well_router, prefix="/api/v1/well-data", tags=["well-data"])
-app.include_router(model_input_router, prefix="/api/v1/model-inputs", tags=["model-inputs"])
 
 if __name__ == "__main__":
     import uvicorn

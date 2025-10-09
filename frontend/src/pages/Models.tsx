@@ -19,6 +19,13 @@ export default function Models() {
   const [models, setModels] = useState<Model[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newModel, setNewModel] = useState({
+    name: '',
+    description: '',
+    modelType: 'aquifer' as 'aquifer' | 'well' | 'optimization'
+  })
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -27,7 +34,17 @@ export default function Models() {
       try {
         setLoading(true)
         setError(null)
-        // For now, we'll create some mock data. Later this will come from the API
+        
+        // First try to load from localStorage
+        const savedModels = localStorage.getItem('aquifer-models')
+        if (savedModels) {
+          const parsedModels = JSON.parse(savedModels)
+          setModels(parsedModels)
+          setLoading(false)
+          return
+        }
+        
+        // If no saved models, create default mock data
         const mockModels: Model[] = [
           {
             id: 1,
@@ -57,6 +74,9 @@ export default function Models() {
             modelType: 'optimization'
           }
         ]
+        
+        // Save mock data to localStorage
+        localStorage.setItem('aquifer-models', JSON.stringify(mockModels))
         setModels(mockModels)
       } catch (e: any) {
         setError(e?.response?.data?.detail || e?.message || 'Failed to load models')
@@ -67,6 +87,54 @@ export default function Models() {
 
     fetchModels()
   }, [isAuthenticated])
+
+  // Save models to localStorage whenever models state changes
+  useEffect(() => {
+    if (models.length > 0) {
+      localStorage.setItem('aquifer-models', JSON.stringify(models))
+    }
+  }, [models])
+
+  const handleCreateModel = async () => {
+    if (!newModel.name.trim() || !newModel.description.trim()) {
+      setError('Please fill in all required fields')
+      return
+    }
+
+    try {
+      setCreating(true)
+      setError(null)
+      
+      // Generate unique ID based on existing models
+      const existingIds = models.map(m => m.id)
+      const newId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1
+      
+      // Create new model with proper ID and timestamp
+      const createdModel: Model = {
+        id: newId,
+        name: newModel.name.trim(),
+        description: newModel.description.trim(),
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        modelType: newModel.modelType
+      }
+      
+      // Add to models list (this will trigger localStorage save via useEffect)
+      const updatedModels = [...models, createdModel]
+      setModels(updatedModels)
+      
+      // Clear form and close modal
+      setNewModel({ name: '', description: '', modelType: 'aquifer' })
+      setShowCreateModal(false)
+      
+      // Navigate to the new model
+      navigate(`/models/${createdModel.id}`)
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'Failed to create model')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   if (!isAuthenticated) {
     return (
@@ -132,7 +200,7 @@ export default function Models() {
             Models
           </h1>
           <button 
-            onClick={() => navigate('/models/create')}
+            onClick={() => setShowCreateModal(true)}
             style={{
               background: 'var(--blue-500)',
               color: 'white',
@@ -219,12 +287,177 @@ export default function Models() {
                 onOpen={() => navigate(`/models/${model.id}`)}
                 onDelete={() => {
                   if (confirm('Are you sure you want to delete this model?')) {
-                    setModels(models.filter(m => m.id !== model.id))
+                    const updatedModels = models.filter(m => m.id !== model.id)
+                    setModels(updatedModels)
+                    // localStorage will be updated automatically via useEffect
                   }
                 }}
               />
             ))
           )}
+        </div>
+      )}
+
+      {/* Create Model Modal */}
+      {showCreateModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: '12px',
+            padding: '2rem',
+            width: '100%',
+            maxWidth: '500px',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{
+              margin: '0 0 1.5rem 0',
+              color: 'var(--text-primary)',
+              fontSize: '1.5rem',
+              fontWeight: '600'
+            }}>
+              Create New Model
+            </h2>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                color: 'var(--text-secondary)',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}>
+                Model Name *
+              </label>
+              <input
+                type="text"
+                value={newModel.name}
+                onChange={(e) => setNewModel({ ...newModel, name: e.target.value })}
+                placeholder="Enter model name"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-primary)',
+                  background: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                color: 'var(--text-secondary)',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}>
+                Description *
+              </label>
+              <textarea
+                value={newModel.description}
+                onChange={(e) => setNewModel({ ...newModel, description: e.target.value })}
+                placeholder="Enter model description"
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-primary)',
+                  background: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  boxSizing: 'border-box',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                color: 'var(--text-secondary)',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}>
+                Model Type
+              </label>
+              <select
+                value={newModel.modelType}
+                onChange={(e) => setNewModel({ ...newModel, modelType: e.target.value as any })}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-primary)',
+                  background: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="aquifer">🌊 Aquifer Model</option>
+                <option value="well">🏗️ Well Model</option>
+                <option value="optimization">🎯 Optimization Model</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false)
+                  setNewModel({ name: '', description: '', modelType: 'aquifer' })
+                  setError(null)
+                }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-primary)',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateModel}
+                disabled={creating}
+                style={{
+                  background: creating ? 'var(--text-disabled)' : 'var(--blue-500)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: creating ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {creating ? 'Creating...' : 'Create Model'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
