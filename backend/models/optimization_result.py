@@ -15,18 +15,15 @@ class OptimizationResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     simulation_id = Column(Integer, ForeignKey("simulations.id"), nullable=False, index=True)
     
-    # Optimization parameters
-    parameters_optimized = Column(JSON)  # Array of parameter names
-    optimal_values = Column(JSON)  # Object of optimal parameter values
+    # Optimization configuration and results
+    optimization_config = Column(JSON)  # Parameters optimized, constraints, etc.
+    optimization_results = Column(JSON)  # Optimal values, convergence info, etc.
     
-    # Optimization metrics
-    rmse = Column(Float)
-    total_residual_error = Column(Float)
-    convergence_achieved = Column(Boolean, default=False)
-    iterations_completed = Column(Integer)
+    # Performance metrics
+    performance_metrics = Column(JSON)  # RMSE, errors, convergence data
     
-    # Results file path
-    results_file_path = Column(String(500))
+    # Optional metadata
+    description = Column(String(500))
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     

@@ -19,24 +19,17 @@ class WellData(Base):
     well_id = Column(String(100), nullable=False, index=True)
     well_type = Column(String(50), nullable=False)  # "pumping", "observation"
     
-    # Well geometry
-    distance_from_pumping_well_meters = Column(JSON)  # Array of distances
-    well_radius_meters = Column(Float)
-    screen_top_meters = Column(Float)
-    screen_bottom_meters = Column(Float)
+    # Well geometry and configuration
+    well_configuration = Column(JSON)  # Complete well configuration data
     
-    # Simulation results
-    simulated_drawdown_meters = Column(JSON)  # Array of drawdown values
-    observed_drawdown_meters = Column(JSON)  # Array of observed values
-    observed_time_seconds = Column(JSON)  # Array of time values
-    avg_head_at_distance_meters = Column(JSON)  # Array of head values
+    # Simulation results and observations
+    simulation_results = Column(JSON)  # All simulation results data
     
-    # Interpolation results
-    interpolated_times = Column(JSON)
-    interpolated_observed_drawdown = Column(JSON)
-    interpolated_simulated_drawdown = Column(JSON)
-    rmse = Column(Float)
-    total_residual_error = Column(Float)
+    # Analysis results (RMSE, interpolation, etc.)
+    analysis_results = Column(JSON)  # Analysis and comparison results
+    
+    # Optional metadata
+    description = Column(String(500))
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     

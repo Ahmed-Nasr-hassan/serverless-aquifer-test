@@ -27,9 +27,6 @@ class Simulation(Base):
     pumping_length_seconds = Column(Float)
     total_simulation_time_steps = Column(Integer)
     
-    # File paths
-    input_file_path = Column(String(500))
-    results_file_path = Column(String(500))
     
     # User association
     user_id = Column(String(255), nullable=False, index=True)

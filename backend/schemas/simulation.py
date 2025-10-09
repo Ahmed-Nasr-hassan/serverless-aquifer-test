@@ -17,7 +17,6 @@ class SimulationBase(BaseModel):
 
 class SimulationCreate(SimulationBase):
     """Schema for creating a new simulation."""
-    input_file_path: Optional[str] = None
 
 
 class SimulationUpdate(BaseModel):
@@ -30,7 +29,6 @@ class SimulationUpdate(BaseModel):
     total_wells_analyzed: Optional[int] = Field(None, ge=0)
     pumping_length_seconds: Optional[float] = Field(None, gt=0)
     total_simulation_time_steps: Optional[int] = Field(None, ge=0)
-    results_file_path: Optional[str] = None
 
 
 class SimulationResponse(SimulationBase):
@@ -44,8 +42,6 @@ class SimulationResponse(SimulationBase):
     total_wells_analyzed: Optional[int] = None
     pumping_length_seconds: Optional[float] = None
     total_simulation_time_steps: Optional[int] = None
-    input_file_path: Optional[str] = None
-    results_file_path: Optional[str] = None
 
     class Config:
         from_attributes = True
