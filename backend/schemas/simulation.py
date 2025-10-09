@@ -15,7 +15,7 @@ class SimulationBase(BaseModel):
     simulation_type: str = Field(..., min_length=1, max_length=100)
     status: Optional[str] = "pending"  # pending, running, completed, failed
     results: Optional[Dict[str, Any]] = None  # Simulation results
-    user_id: str = Field(..., min_length=1, max_length=255)
+    user_id: int
 
 
 class SimulationCreate(SimulationBase):

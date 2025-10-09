@@ -12,6 +12,7 @@ import Simulations from './pages/Simulations'
 import CreateSimulation from './pages/CreateSimulation'
 import EditSimulation from './pages/EditSimulation'
 import Login from './pages/Login'
+import SignUp from './pages/SignUp'
 
 const router = createBrowserRouter([
   {
@@ -27,7 +28,8 @@ const router = createBrowserRouter([
               { path: 'simulations/edit/:id', element: <EditSimulation /> },
     ],
   },
-  { path: '/login', element: <Login /> },
+          { path: '/login', element: <Login /> },
+          { path: '/signup', element: <SignUp /> },
 ])
 
 createRoot(document.getElementById('root')!).render(

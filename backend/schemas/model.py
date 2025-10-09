@@ -14,7 +14,7 @@ class ModelBase(BaseModel):
     model_type: str  # aquifer, well, optimization
     configuration: Dict[str, Any]  # Complete model configuration
     status: Optional[str] = "active"  # active, inactive, running, error
-    user_id: str
+    user_id: int
 
 
 class ModelCreate(ModelBase):

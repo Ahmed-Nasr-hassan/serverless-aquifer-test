@@ -36,10 +36,11 @@ class Simulation(Base):
     total_simulation_time_steps = Column(Integer)
     
     # User association
-    user_id = Column(String(255), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     
     # Relationships
     model = relationship("Model", back_populates="simulations")
+    user = relationship("User", back_populates="simulations")
     
     def __repr__(self):
         return f"<Simulation(id={self.id}, name='{self.name}', type='{self.simulation_type}')>"

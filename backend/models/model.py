@@ -2,7 +2,7 @@
 Model entity for storing aquifer model configurations.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, JSON
+from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -26,10 +26,11 @@ class Model(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # User association
-    user_id = Column(String(255), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     
     # Relationships
     simulations = relationship("Simulation", back_populates="model", cascade="all, delete-orphan")
+    user = relationship("User", back_populates="models")
     
     def __repr__(self):
         return f"<Model(id={self.id}, name='{self.name}', type='{self.model_type}')>"

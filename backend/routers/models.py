@@ -1,5 +1,5 @@
 """
-API routes for Model entity.
+API routes for Model entity with authentication.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,15 +7,25 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
 from models.model import Model
+from models.user import User
 from schemas.model import ModelCreate, ModelUpdate, ModelResponse
+from auth.utils import get_current_active_user
 
 models_router = APIRouter()
 
 
 @models_router.post("/", response_model=ModelResponse, status_code=status.HTTP_201_CREATED)
-def create_model(model: ModelCreate, db: Session = Depends(get_db)):
+def create_model(
+    model: ModelCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """Create a new model."""
-    db_model = Model(**model.dict())
+    # Override user_id with current user's ID
+    model_data = model.dict()
+    model_data["user_id"] = current_user.id
+    
+    db_model = Model(**model_data)
     db.add(db_model)
     db.commit()
     db.refresh(db_model)
@@ -23,16 +33,29 @@ def create_model(model: ModelCreate, db: Session = Depends(get_db)):
 
 
 @models_router.get("/", response_model=List[ModelResponse])
-def get_models(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Get all models."""
-    models = db.query(Model).offset(skip).limit(limit).all()
+def get_models(
+    skip: int = 0, 
+    limit: int = 100, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get all models for the current user."""
+    models = db.query(Model).filter(Model.user_id == current_user.id).offset(skip).limit(limit).all()
     return models
 
 
 @models_router.get("/{model_id}", response_model=ModelResponse)
-def get_model(model_id: int, db: Session = Depends(get_db)):
+def get_model(
+    model_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """Get a specific model by ID."""
-    model = db.query(Model).filter(Model.id == model_id).first()
+    model = db.query(Model).filter(
+        Model.id == model_id,
+        Model.user_id == current_user.id
+    ).first()
+    
     if not model:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -42,9 +65,18 @@ def get_model(model_id: int, db: Session = Depends(get_db)):
 
 
 @models_router.put("/{model_id}", response_model=ModelResponse)
-def update_model(model_id: int, model_update: ModelUpdate, db: Session = Depends(get_db)):
+def update_model(
+    model_id: int, 
+    model_update: ModelUpdate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """Update a model."""
-    model = db.query(Model).filter(Model.id == model_id).first()
+    model = db.query(Model).filter(
+        Model.id == model_id,
+        Model.user_id == current_user.id
+    ).first()
+    
     if not model:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -61,9 +93,17 @@ def update_model(model_id: int, model_update: ModelUpdate, db: Session = Depends
 
 
 @models_router.delete("/{model_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_model(model_id: int, db: Session = Depends(get_db)):
+def delete_model(
+    model_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """Delete a model."""
-    model = db.query(Model).filter(Model.id == model_id).first()
+    model = db.query(Model).filter(
+        Model.id == model_id,
+        Model.user_id == current_user.id
+    ).first()
+    
     if not model:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

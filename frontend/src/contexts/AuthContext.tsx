@@ -2,18 +2,29 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import axios from 'axios'
 
 interface User {
-  id: string
-  username: string
+  id: number
   email: string
+  full_name: string
+  is_active: boolean
+  is_verified: boolean
+  created_at: string
+  last_login?: string
 }
 
 interface AuthContextType {
   user: User | null
   token: string | null
-  login: (username: string, password: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<boolean>
+  register: (userData: RegisterData) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
   loading: boolean
+}
+
+interface RegisterData {
+  email: string
+  full_name: string
+  password: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -50,9 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post('/api/v1/auth/login', { username, password })
+      const response = await axios.post('/api/v1/auth/login', { email, password })
       const { access_token } = response.data
       
       if (access_token) {
@@ -73,6 +84,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const register = async (userData: RegisterData): Promise<void> => {
+    try {
+      const response = await axios.post('/api/v1/auth/register', userData)
+      
+      // Registration successful - user can now login
+      return response.data
+      
+    } catch (error: any) {
+      console.error('Registration error:', error)
+      throw new Error(error?.response?.data?.detail || 'Registration failed')
+    }
+  }
+
   const logout = () => {
     setUser(null)
     setToken(null)
@@ -84,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     token,
     login,
+    register,
     logout,
     isAuthenticated: !!user && !!token,
     loading

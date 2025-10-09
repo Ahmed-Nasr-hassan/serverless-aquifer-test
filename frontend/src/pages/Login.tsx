@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
 export default function Login() {
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('any')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -18,11 +18,11 @@ export default function Login() {
     setMessage('')
     
     try {
-      const success = await login(username, password)
+      const success = await login(email, password)
       if (success) {
         navigate('/')
       } else {
-        setMessage('Invalid username or password')
+        setMessage('Invalid email or password')
       }
     } catch (error: any) {
       setMessage(error?.response?.data?.detail || 'Login failed')
@@ -99,11 +99,11 @@ export default function Login() {
               fontSize: '0.875rem',
               fontWeight: '500'
             }}>
-              Username
+              Email Address
             </label>
             <input 
-              value={username} 
-              onChange={e => setUsername(e.target.value)} 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
@@ -114,7 +114,8 @@ export default function Login() {
                 fontSize: '0.875rem',
                 boxSizing: 'border-box'
               }}
-              placeholder="Enter username"
+              placeholder="Enter email address"
+              type="email"
               required
             />
           </div>
@@ -183,29 +184,36 @@ export default function Login() {
           )}
         </form>
 
-        <div style={{ 
-          marginTop: '1.5rem', 
+        {/* Sign Up Link */}
+        <div style={{
+          textAlign: 'center',
+          marginTop: '1.5rem',
           padding: '1rem',
           background: 'var(--bg-panel)',
           borderRadius: '8px',
           border: '1px solid var(--border-primary)'
         }}>
-          <div style={{ 
-            color: 'var(--text-muted)', 
-            fontSize: '0.75rem',
-            marginBottom: '0.5rem',
-            fontWeight: '500'
+          <p style={{
+            color: 'var(--text-secondary)',
+            fontSize: '0.875rem',
+            margin: '0 0 0.5rem 0'
           }}>
-            Demo Credentials:
-          </div>
-          <div style={{ 
-            color: 'var(--text-secondary)', 
-            fontSize: '0.75rem',
-            fontFamily: 'monospace'
-          }}>
-            Username: admin<br />
-            Password: any
-          </div>
+            Don't have an account?
+          </p>
+          <Link
+            to="/signup"
+            style={{
+              color: 'var(--blue-600)',
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--blue-700)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--blue-600)'}
+          >
+            Create a new account
+          </Link>
         </div>
       </div>
     </div>
