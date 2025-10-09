@@ -51,8 +51,13 @@ a:hover {
 
 body {
   margin: 0;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 #root { 
@@ -148,4 +153,45 @@ tr:hover {
 
 tr:last-child td {
   border-bottom: none;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  /* Adjust padding for mobile */
+  .card {
+    padding: 1rem;
+  }
+  
+  /* Make tables responsive */
+  table {
+    font-size: 0.75rem;
+  }
+  
+  th, td {
+    padding: 0.5rem;
+  }
+  
+  /* Stack buttons vertically on mobile */
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  /* Adjust grid layouts for mobile */
+  .mobile-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* Hide some elements on very small screens */
+  @media (max-width: 480px) {
+    .hide-mobile {
+      display: none;
+    }
+  }
 }

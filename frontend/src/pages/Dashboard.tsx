@@ -87,12 +87,12 @@ export default function Dashboard() {
           <div style={{ color: 'var(--text-muted)' }}>Loading dashboard...</div>
         </div>
       ) : (
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-          gap: '1.5rem',
-          marginBottom: '2rem'
-        }}>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                  gap: '1.5rem',
+                  marginBottom: '2rem'
+                }} className="mobile-grid">
                   <StatCard 
                     title="Models" 
                     value={stats.models} 
@@ -129,7 +129,7 @@ export default function Dashboard() {
                   display: 'grid', 
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
                   gap: '1rem' 
-                }}>
+                }} className="mobile-grid">
                   <ActionButton 
                     title="Manage Models" 
                     description="Configure and run models"

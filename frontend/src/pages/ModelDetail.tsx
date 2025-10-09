@@ -470,7 +470,7 @@ export default function ModelDetail() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }} className="mobile-grid">
         {/* Configuration Panel */}
         <div>
           {/* Basic Settings */}
@@ -684,7 +684,7 @@ export default function ModelDetail() {
                 <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Observation Wells
                 </h4>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem' }} className="mobile-stack">
                   <button 
                     onClick={downloadCSVTemplate}
                     style={{

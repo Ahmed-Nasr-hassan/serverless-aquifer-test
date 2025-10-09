@@ -1,11 +1,28 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useState, useEffect } from 'react'
 
 export default function RootLayout() {
   const { user, logout, isAuthenticated, loading } = useAuth()
   const { isDarkMode, toggleTheme } = useTheme()
   const navigate = useNavigate()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -68,44 +85,99 @@ export default function RootLayout() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', minHeight: '100vh' }}>
-              <aside style={{ 
-                background: 'var(--bg-panel)', 
-                borderRight: '1px solid var(--border-primary)',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: '2px 0 8px rgba(0, 0, 0, 0.05)'
-              }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+      {/* Mobile Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 998
+          }}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside style={{ 
+        background: 'var(--bg-panel)', 
+        borderRight: '1px solid var(--border-primary)',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.05)',
+        width: isMobile ? '280px' : (sidebarCollapsed ? '64px' : '280px'),
+        position: isMobile ? 'fixed' : 'relative',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        zIndex: 999,
+        transform: isMobile ? (mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
+        transition: 'all 0.3s ease',
+        flexShrink: 0,
+        margin: 0,
+        padding: 0
+      }}>
         <div style={{ 
           padding: '1.5rem 1.25rem', 
           borderBottom: '1px solid var(--border-primary)',
-          background: 'var(--bg-panel-accent)'
+          background: 'var(--bg-panel-accent)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
         }}>
-          <div style={{ 
-            fontWeight: '800', 
-            fontSize: '1.25rem',
-            letterSpacing: '0.5px',
-            color: 'var(--text-primary)',
-            marginBottom: '0.25rem'
-          }}>
-            Aquifer Console
-          </div>
-          <div style={{ 
-            fontSize: '0.75rem', 
-            color: 'var(--text-muted)',
-            fontWeight: '500'
-          }}>
-            Where Technology Meets Groundwater
-          </div>
+          {!sidebarCollapsed && (
+            <div>
+              <div style={{ 
+                fontWeight: '800', 
+                fontSize: '1.25rem',
+                letterSpacing: '0.5px',
+                color: 'var(--text-primary)',
+                marginBottom: '0.25rem'
+              }}>
+                Aquifer Console
+              </div>
+              <div style={{ 
+                fontSize: '0.75rem', 
+                color: 'var(--text-muted)',
+                fontWeight: '500'
+              }}>
+                Where Technology Meets Groundwater
+              </div>
+            </div>
+          )}
+          
+          {/* Collapse Toggle Button */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border-primary)',
+              borderRadius: '6px',
+              padding: '0.5rem',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              transition: 'all 0.2s ease',
+              display: isMobile ? 'none' : 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? '→' : '←'}
+          </button>
         </div>
         
         <nav style={{ padding: '1rem 0.75rem', flex: 1 }}>
-          <NavItem to="/" label="Dashboard" icon="📊" />
-          <NavItem to="/models" label="Models" icon="🔬" />
+          <NavItem to="/" label="Dashboard" icon="📊" collapsed={sidebarCollapsed} />
+          <NavItem to="/models" label="Models" icon="🔬" collapsed={sidebarCollapsed} />
           
           <div style={{ height: '1rem' }} />
           
-                  <NavItem to="/simulations" label="Simulations" icon="⚡" />
+          <NavItem to="/simulations" label="Simulations" icon="⚡" collapsed={sidebarCollapsed} />
         </nav>
         
         <div style={{ 
@@ -113,13 +185,15 @@ export default function RootLayout() {
           borderTop: '1px solid var(--border-primary)',
           background: 'var(--bg-panel-accent)'
         }}>
-          <div style={{ 
-            color: 'var(--text-muted)', 
-            fontSize: '0.75rem',
-            marginBottom: '0.5rem'
-          }}>
-            Logged in as: <strong style={{ color: 'var(--text-primary)' }}>{user?.username}</strong>
-          </div>
+          {!sidebarCollapsed && (
+            <div style={{ 
+              color: 'var(--text-muted)', 
+              fontSize: '0.75rem',
+              marginBottom: '0.5rem'
+            }}>
+              Logged in as: <strong style={{ color: 'var(--text-primary)' }}>{user?.username}</strong>
+            </div>
+          )}
           <button 
             onClick={handleLogout}
             style={{
@@ -130,16 +204,31 @@ export default function RootLayout() {
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '0.75rem',
-              width: '100%'
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+              gap: '0.5rem'
             }}
+            title={sidebarCollapsed ? 'Logout' : ''}
           >
-            Logout
+            <span>🚪</span>
+            {!sidebarCollapsed && 'Logout'}
           </button>
         </div>
       </aside>
       
-      <main style={{ display: 'flex', flexDirection: 'column' }}>
-        <Topbar />
+      <main style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        flex: 1,
+        minHeight: '100vh',
+        overflow: 'hidden'
+      }}>
+        <Topbar 
+          onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+          isMobile={isMobile}
+        />
         <div style={{ padding: '1.5rem', flex: 1 }}>
           <Outlet />
         </div>
@@ -148,7 +237,7 @@ export default function RootLayout() {
   )
 }
 
-function Topbar() {
+function Topbar({ onMenuToggle, isMobile }: { onMenuToggle: () => void; isMobile: boolean }) {
   const { isDarkMode, toggleTheme } = useTheme()
   
   return (
@@ -163,12 +252,41 @@ function Topbar() {
       boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
     }}>
       <div style={{ 
-        fontWeight: '600', 
-        fontSize: '1.125rem',
-        color: 'var(--text-primary)'
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem'
       }}>
-        Aquifer API Dashboard
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <button
+            onClick={onMenuToggle}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border-primary)',
+              borderRadius: '8px',
+              padding: '0.5rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-secondary)',
+              transition: 'all 0.2s ease'
+            }}
+            title="Toggle menu"
+          >
+            ☰
+          </button>
+        )}
+        
+        <div style={{ 
+          fontWeight: '600', 
+          fontSize: '1.125rem',
+          color: 'var(--text-primary)'
+        }}>
+          Aquifer API Dashboard
+        </div>
       </div>
+      
       <div style={{ 
         display: 'flex', 
         alignItems: 'center',
@@ -207,7 +325,13 @@ function Topbar() {
   )
 }
 
-function NavItem({ to, label, icon, disabled }: { to: string; label: string; icon: string; disabled?: boolean }) {
+function NavItem({ to, label, icon, disabled, collapsed }: { 
+  to: string; 
+  label: string; 
+  icon: string; 
+  disabled?: boolean;
+  collapsed?: boolean;
+}) {
   if (disabled) {
     return (
       <div style={{ 
@@ -218,10 +342,11 @@ function NavItem({ to, label, icon, disabled }: { to: string; label: string; ico
         alignItems: 'center',
         gap: '0.75rem',
         borderRadius: '8px',
-        margin: '0.25rem 0'
+        margin: '0.25rem 0',
+        justifyContent: collapsed ? 'center' : 'flex-start'
       }}>
         <span>{icon}</span>
-        {label}
+        {!collapsed && label}
       </div>
     )
   }
@@ -238,14 +363,15 @@ function NavItem({ to, label, icon, disabled }: { to: string; label: string; ico
         borderRadius: '8px',
         background: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
         border: isActive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent',
-                color: isActive ? 'var(--blue-600)' : 'var(--text-secondary)',
+        color: isActive ? 'var(--blue-600)' : 'var(--text-secondary)',
         textDecoration: 'none',
         transition: 'all 0.2s ease',
-        fontWeight: isActive ? '500' : '400'
+        fontWeight: isActive ? '500' : '400',
+        justifyContent: collapsed ? 'center' : 'flex-start'
       })}
     >
       <span>{icon}</span>
-      {label}
+      {!collapsed && label}
     </NavLink>
   )
 }
