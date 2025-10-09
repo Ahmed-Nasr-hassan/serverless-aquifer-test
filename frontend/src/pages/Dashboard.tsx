@@ -6,8 +6,7 @@ export default function Dashboard() {
   const { isAuthenticated } = useAuth()
   const [stats, setStats] = useState({
     simulations: 0,
-    modelInputs: 0,
-    wells: 0
+    models: 0
   })
   const [loading, setLoading] = useState(true)
 
@@ -16,15 +15,11 @@ export default function Dashboard() {
 
     const fetchStats = async () => {
       try {
-        const [simRes, modelRes] = await Promise.all([
-          axios.get('/api/v1/simulations/'),
-          axios.get('/api/v1/model-inputs/')
-        ])
+        const simRes = await axios.get('/api/v1/simulations/')
         
         setStats({
           simulations: Array.isArray(simRes.data) ? simRes.data.length : 0,
-          modelInputs: Array.isArray(modelRes.data) ? modelRes.data.length : 0,
-          wells: 0 // Placeholder
+          models: 3 // Mock data for now
         })
       } catch (error) {
         console.error('Failed to fetch stats:', error)
@@ -98,27 +93,20 @@ export default function Dashboard() {
           gap: '1.5rem',
           marginBottom: '2rem'
         }}>
-          <StatCard 
-            title="Simulations" 
-            value={stats.simulations} 
-            icon="⚡"
-            color="var(--blue-500)"
-            description="Total simulations run"
-          />
-          <StatCard 
-            title="Model Inputs" 
-            value={stats.modelInputs} 
-            icon="📋"
-            color="var(--success)"
-            description="Data submissions"
-          />
-          <StatCard 
-            title="Wells" 
-            value={stats.wells} 
-            icon="🏗️"
-            color="var(--warning)"
-            description="Well configurations"
-          />
+                  <StatCard 
+                    title="Models" 
+                    value={stats.models} 
+                    icon="🔬"
+                    color="var(--blue-500)"
+                    description="Active models"
+                  />
+                  <StatCard 
+                    title="Simulations" 
+                    value={stats.simulations} 
+                    icon="⚡"
+                    color="var(--success)"
+                    description="Total simulations run"
+                  />
         </div>
       )}
 
@@ -137,30 +125,24 @@ export default function Dashboard() {
         }}>
           Quick Actions
         </h3>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: '1rem' 
-        }}>
-          <ActionButton 
-            title="Create Simulation" 
-            description="Start a new simulation"
-            icon="⚡"
-            onClick={() => window.location.href = '/simulations'}
-          />
-          <ActionButton 
-            title="Upload Data" 
-            description="Submit model inputs"
-            icon="📋"
-            onClick={() => window.location.href = '/model-inputs'}
-          />
-          <ActionButton 
-            title="View Wells" 
-            description="Manage well data"
-            icon="🏗️"
-            disabled
-          />
-        </div>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: '1rem' 
+                }}>
+                  <ActionButton 
+                    title="Manage Models" 
+                    description="Configure and run models"
+                    icon="🔬"
+                    onClick={() => window.location.href = '/models'}
+                  />
+                  <ActionButton 
+                    title="View Simulations" 
+                    description="Monitor simulation runs"
+                    icon="⚡"
+                    onClick={() => window.location.href = '/simulations'}
+                  />
+                </div>
       </div>
     </div>
   )

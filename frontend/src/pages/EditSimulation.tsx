@@ -10,7 +10,7 @@ export default function EditSimulation() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    simulation_type: 'Calibration',
+    simulation_type: 'Optimization',
     status: 'pending'
   })
   const [loading, setLoading] = useState(false)
@@ -26,7 +26,7 @@ export default function EditSimulation() {
         setFormData({
           name: sim.name || '',
           description: sim.description || '',
-          simulation_type: sim.simulation_type || 'Calibration',
+          simulation_type: sim.simulation_type || 'Optimization',
           status: sim.status || 'pending'
         })
       } catch (e: any) {
@@ -196,10 +196,9 @@ export default function EditSimulation() {
                 boxSizing: 'border-box'
               }}
             >
-              <option value="Calibration">Calibration</option>
+              <option value="Optimization">Optimization</option>
               <option value="Prediction">Prediction</option>
               <option value="Sensitivity">Sensitivity Analysis</option>
-              <option value="Optimization">Optimization</option>
             </select>
           </div>
 

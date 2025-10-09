@@ -267,7 +267,7 @@ function StatusBadge({ status }: { status: string }) {
         return 'var(--success)'
       case 'failed':
         return 'var(--error)'
-      case 'calibration':
+      case 'optimization':
         return 'var(--blue-500)'
       default:
         return 'var(--text-muted)'

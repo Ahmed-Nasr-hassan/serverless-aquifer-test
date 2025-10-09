@@ -101,14 +101,11 @@ export default function RootLayout() {
         
         <nav style={{ padding: '1rem 0.75rem', flex: 1 }}>
           <NavItem to="/" label="Dashboard" icon="📊" />
-          <NavItem to="/simulations" label="Simulations" icon="⚡" />
-          <NavItem to="/model-inputs" label="Model Inputs" icon="📋" />
+          <NavItem to="/models" label="Models" icon="🔬" />
           
           <div style={{ height: '1rem' }} />
           
-          <NavItem to="/well-data" label="Wells" icon="🏗️" />
-          <NavItem to="/aquifer-data" label="Aquifer" icon="🌊" />
-          <NavItem to="/optimization-results" label="Optimization" icon="🎯" />
+                  <NavItem to="/simulations" label="Simulations" icon="⚡" />
         </nav>
         
         <div style={{ 
