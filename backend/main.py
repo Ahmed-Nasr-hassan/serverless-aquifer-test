@@ -47,11 +47,13 @@ async def health_check():
 
 # Include routers
 from routers import simulation_router, data_router, optimization_router
+from auth.routes import auth_router
 
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(simulation_router, prefix="/api/v1/simulations", tags=["simulations"])
 app.include_router(data_router, prefix="/api/v1/data", tags=["aquifer-data"])
 app.include_router(optimization_router, prefix="/api/v1/optimization", tags=["optimization"])
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000,reload=True)
