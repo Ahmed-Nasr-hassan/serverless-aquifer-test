@@ -1,8 +1,10 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 export default function RootLayout() {
   const { user, logout, isAuthenticated, loading } = useAuth()
+  const { isDarkMode, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -10,19 +12,19 @@ export default function RootLayout() {
     navigate('/login')
   }
 
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'var(--bg-primary)'
-      }}>
-        <div style={{ color: 'var(--text-muted)' }}>Loading...</div>
-      </div>
-    )
-  }
+          if (loading) {
+            return (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                background: 'var(--bg-secondary)'
+              }}>
+                <div style={{ color: 'var(--text-muted)' }}>Loading...</div>
+              </div>
+            )
+          }
 
   if (!isAuthenticated) {
     return (
@@ -31,7 +33,7 @@ export default function RootLayout() {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '100vh',
-        background: 'var(--bg-primary)'
+        background: 'var(--bg-secondary)'
       }}>
         <div style={{ 
           textAlign: 'center',
@@ -45,21 +47,21 @@ export default function RootLayout() {
           <p style={{ color: 'var(--text-muted)', margin: '0 0 1.5rem 0' }}>
             Please log in to access the Aquifer Console
           </p>
-          <button 
-            onClick={() => navigate('/login')}
-            style={{
-              background: 'var(--blue-600)',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              fontWeight: '500'
-            }}
-          >
-            Go to Login
-          </button>
+                  <button 
+                    onClick={() => navigate('/login')}
+                    style={{
+                      background: 'var(--blue-500)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '1rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Go to Login
+                  </button>
         </div>
       </div>
     )
@@ -67,12 +69,13 @@ export default function RootLayout() {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', minHeight: '100vh' }}>
-      <aside style={{ 
-        background: 'var(--bg-panel)', 
-        borderRight: '1px solid var(--border-primary)',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
+              <aside style={{ 
+                background: 'var(--bg-panel)', 
+                borderRight: '1px solid var(--border-primary)',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '2px 0 8px rgba(0, 0, 0, 0.05)'
+              }}>
         <div style={{ 
           padding: '1.5rem 1.25rem', 
           borderBottom: '1px solid var(--border-primary)',
@@ -92,7 +95,7 @@ export default function RootLayout() {
             color: 'var(--text-muted)',
             fontWeight: '500'
           }}>
-            ArgoCD-inspired • Blue Theme
+            Where Technology Meets Groundwater
           </div>
         </div>
         
@@ -149,6 +152,8 @@ export default function RootLayout() {
 }
 
 function Topbar() {
+  const { isDarkMode, toggleTheme } = useTheme()
+  
   return (
     <div style={{
       height: '64px',
@@ -172,6 +177,24 @@ function Topbar() {
         alignItems: 'center',
         gap: '0.75rem'
       }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--border-primary)',
+            borderRadius: '8px',
+            padding: '0.5rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-secondary)',
+            transition: 'all 0.2s ease'
+          }}
+          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
         <div style={{
           background: 'var(--success)',
           color: 'white',
@@ -218,7 +241,7 @@ function NavItem({ to, label, icon, disabled }: { to: string; label: string; ico
         borderRadius: '8px',
         background: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
         border: isActive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent',
-        color: isActive ? 'var(--blue-300)' : 'var(--text-secondary)',
+                color: isActive ? 'var(--blue-600)' : 'var(--text-secondary)',
         textDecoration: 'none',
         transition: 'all 0.2s ease',
         fontWeight: isActive ? '500' : '400'

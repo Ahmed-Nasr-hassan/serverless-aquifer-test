@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 type WellData = {
@@ -10,9 +11,21 @@ type WellData = {
 
 export default function WellData() {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [items, setItems] = useState<WellData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this well data?')) return
+    
+    try {
+      await axios.delete(`/api/v1/well-data/${id}`)
+      setItems(items.filter(item => item.id !== id))
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'Failed to delete well data')
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -58,14 +71,32 @@ export default function WellData() {
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          margin: '0 0 0.5rem 0', 
-          color: 'var(--text-primary)',
-          fontSize: '2rem',
-          fontWeight: '700'
-        }}>
-          Well Data
-        </h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <h1 style={{ 
+            margin: 0, 
+            color: 'var(--text-primary)',
+            fontSize: '2rem',
+            fontWeight: '700'
+          }}>
+            Well Data
+          </h1>
+          <button 
+            onClick={() => navigate('/well-data/create')}
+            style={{
+              background: 'var(--blue-500)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            + Create Well Data
+          </button>
+        </div>
         <p style={{ 
           color: 'var(--text-muted)', 
           margin: 0,
@@ -126,25 +157,58 @@ export default function WellData() {
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-panel-accent)' }}>
-                  <Th>ID</Th>
-                  <Th>Name</Th>
-                  <Th>Created</Th>
-                </tr>
-              </thead>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-panel-accent)' }}>
+                          <Th>ID</Th>
+                          <Th>Name</Th>
+                          <Th>Created</Th>
+                          <Th>Actions</Th>
+                        </tr>
+                      </thead>
               <tbody>
-                {items.map(well => (
-                  <tr key={well.id} style={{ borderTop: '1px solid var(--border-primary)' }}>
-                    <Td>{well.id}</Td>
-                    <Td style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
-                      {well.name}
-                    </Td>
-                    <Td style={{ color: 'var(--text-muted)' }}>
-                      {new Date(well.created_at).toLocaleString()}
-                    </Td>
-                  </tr>
-                ))}
+                        {items.map(well => (
+                          <tr key={well.id} style={{ borderTop: '1px solid var(--border-primary)' }}>
+                            <Td>{well.id}</Td>
+                            <Td style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                              {well.name}
+                            </Td>
+                            <Td style={{ color: 'var(--text-muted)' }}>
+                              {new Date(well.created_at).toLocaleString()}
+                            </Td>
+                            <Td>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => navigate(`/well-data/edit/${well.id}`)}
+                                  style={{
+                                    background: 'var(--blue-500)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(well.id)}
+                                  style={{
+                                    background: 'var(--error)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </Td>
+                          </tr>
+                        ))}
               </tbody>
             </table>
           )}

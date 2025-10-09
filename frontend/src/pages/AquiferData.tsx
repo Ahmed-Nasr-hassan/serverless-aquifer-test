@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 type AquiferData = {
@@ -10,9 +11,21 @@ type AquiferData = {
 
 export default function AquiferData() {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [items, setItems] = useState<AquiferData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this aquifer data?')) return
+    
+    try {
+      await axios.delete(`/api/v1/aquifer-data/${id}`)
+      setItems(items.filter(item => item.id !== id))
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'Failed to delete aquifer data')
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated) return

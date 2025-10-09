@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 type ModelInput = {
@@ -11,9 +12,21 @@ type ModelInput = {
 
 export default function ModelInputs() {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [items, setItems] = useState<ModelInput[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this model input?')) return
+    
+    try {
+      await axios.delete(`/api/v1/model-inputs/${id}`)
+      setItems(items.filter(item => item.id !== id))
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'Failed to delete model input')
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -59,14 +72,32 @@ export default function ModelInputs() {
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          margin: '0 0 0.5rem 0', 
-          color: 'var(--text-primary)',
-          fontSize: '2rem',
-          fontWeight: '700'
-        }}>
-          Model Inputs
-        </h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <h1 style={{ 
+            margin: 0, 
+            color: 'var(--text-primary)',
+            fontSize: '2rem',
+            fontWeight: '700'
+          }}>
+            Model Inputs
+          </h1>
+          <button 
+            onClick={() => navigate('/model-inputs/create')}
+            style={{
+              background: 'var(--blue-500)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            + Create Model Input
+          </button>
+        </div>
         <p style={{ 
           color: 'var(--text-muted)', 
           margin: 0,
@@ -127,29 +158,62 @@ export default function ModelInputs() {
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-panel-accent)' }}>
-                  <Th>ID</Th>
-                  <Th>User ID</Th>
-                  <Th>Model ID</Th>
-                  <Th>Created</Th>
-                </tr>
-              </thead>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-panel-accent)' }}>
+                          <Th>ID</Th>
+                          <Th>User ID</Th>
+                          <Th>Model ID</Th>
+                          <Th>Created</Th>
+                          <Th>Actions</Th>
+                        </tr>
+                      </thead>
               <tbody>
-                {items.map(mi => (
-                  <tr key={mi.id} style={{ borderTop: '1px solid var(--border-primary)' }}>
-                    <Td>{mi.id}</Td>
-                    <Td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                      {mi.user_id}
-                    </Td>
-                    <Td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                      {mi.model_id}
-                    </Td>
-                    <Td style={{ color: 'var(--text-muted)' }}>
-                      {new Date(mi.created_at).toLocaleString()}
-                    </Td>
-                  </tr>
-                ))}
+                        {items.map(mi => (
+                          <tr key={mi.id} style={{ borderTop: '1px solid var(--border-primary)' }}>
+                            <Td>{mi.id}</Td>
+                            <Td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                              {mi.user_id}
+                            </Td>
+                            <Td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                              {mi.model_id}
+                            </Td>
+                            <Td style={{ color: 'var(--text-muted)' }}>
+                              {new Date(mi.created_at).toLocaleString()}
+                            </Td>
+                            <Td>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => navigate(`/model-inputs/edit/${mi.id}`)}
+                                  style={{
+                                    background: 'var(--blue-500)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(mi.id)}
+                                  style={{
+                                    background: 'var(--error)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </Td>
+                          </tr>
+                        ))}
               </tbody>
             </table>
           )}

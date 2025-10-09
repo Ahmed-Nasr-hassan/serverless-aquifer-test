@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 type Simulation = {
@@ -12,9 +13,21 @@ type Simulation = {
 
 export default function Simulations() {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [items, setItems] = useState<Simulation[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this simulation?')) return
+    
+    try {
+      await axios.delete(`/api/v1/simulations/${id}`)
+      setItems(items.filter(item => item.id !== id))
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'Failed to delete simulation')
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -61,14 +74,32 @@ export default function Simulations() {
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          margin: '0 0 0.5rem 0', 
-          color: 'var(--text-primary)',
-          fontSize: '2rem',
-          fontWeight: '700'
-        }}>
-          Simulations
-        </h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <h1 style={{ 
+            margin: 0, 
+            color: 'var(--text-primary)',
+            fontSize: '2rem',
+            fontWeight: '700'
+          }}>
+            Simulations
+          </h1>
+          <button 
+            onClick={() => navigate('/simulations/create')}
+            style={{
+              background: 'var(--blue-500)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            + Create Simulation
+          </button>
+        </div>
         <p style={{ 
           color: 'var(--text-muted)', 
           margin: 0,
@@ -129,33 +160,66 @@ export default function Simulations() {
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-panel-accent)' }}>
-                  <Th>ID</Th>
-                  <Th>Name</Th>
-                  <Th>Type</Th>
-                  <Th>Status</Th>
-                  <Th>Created</Th>
-                </tr>
-              </thead>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-panel-accent)' }}>
+                          <Th>ID</Th>
+                          <Th>Name</Th>
+                          <Th>Type</Th>
+                          <Th>Status</Th>
+                          <Th>Created</Th>
+                          <Th>Actions</Th>
+                        </tr>
+                      </thead>
               <tbody>
-                {items.map(s => (
-                  <tr key={s.id} style={{ borderTop: '1px solid var(--border-primary)' }}>
-                    <Td>{s.id}</Td>
-                    <Td style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
-                      {s.name}
-                    </Td>
-                    <Td>
-                      <StatusBadge status={s.simulation_type} />
-                    </Td>
-                    <Td>
-                      <StatusBadge status={s.status} />
-                    </Td>
-                    <Td style={{ color: 'var(--text-muted)' }}>
-                      {new Date(s.created_at).toLocaleString()}
-                    </Td>
-                  </tr>
-                ))}
+                        {items.map(s => (
+                          <tr key={s.id} style={{ borderTop: '1px solid var(--border-primary)' }}>
+                            <Td>{s.id}</Td>
+                            <Td style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                              {s.name}
+                            </Td>
+                            <Td>
+                              <StatusBadge status={s.simulation_type} />
+                            </Td>
+                            <Td>
+                              <StatusBadge status={s.status} />
+                            </Td>
+                            <Td style={{ color: 'var(--text-muted)' }}>
+                              {new Date(s.created_at).toLocaleString()}
+                            </Td>
+                            <Td>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => navigate(`/simulations/edit/${s.id}`)}
+                                  style={{
+                                    background: 'var(--blue-500)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(s.id)}
+                                  style={{
+                                    background: 'var(--error)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </Td>
+                          </tr>
+                        ))}
               </tbody>
             </table>
           )}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 export default function Login() {
   const [username, setUsername] = useState('admin')
@@ -8,6 +9,7 @@ export default function Login() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
+  const { isDarkMode, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const submit = async (e: React.FormEvent) => {
@@ -30,14 +32,14 @@ export default function Login() {
   }
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '100vh',
-      background: 'var(--bg-primary)',
-      padding: '1rem'
-    }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              minHeight: '100vh',
+              background: 'var(--bg-secondary)',
+              padding: '1rem'
+            }}>
       <div style={{
         width: '100%',
         maxWidth: '400px',
@@ -45,8 +47,31 @@ export default function Login() {
         border: '1px solid var(--border-primary)',
         borderRadius: '16px',
         padding: '2rem',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+        position: 'relative'
       }}>
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            background: 'transparent',
+            border: '1px solid var(--border-primary)',
+            borderRadius: '8px',
+            padding: '0.5rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-secondary)',
+            transition: 'all 0.2s ease'
+          }}
+          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ 
             margin: '0 0 0.5rem 0', 
@@ -128,7 +153,7 @@ export default function Login() {
             disabled={loading}
             style={{
               width: '100%',
-              background: loading ? 'var(--text-disabled)' : 'var(--blue-600)',
+                      background: loading ? 'var(--text-disabled)' : 'var(--blue-500)',
               color: 'white',
               border: 'none',
               padding: '0.875rem 1rem',
