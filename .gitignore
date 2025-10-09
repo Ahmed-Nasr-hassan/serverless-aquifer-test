@@ -1,6 +1,6 @@
 data-processing/*/__pycache__
-data-processing/__pycache__
-data-processing/venv/
+*/__pycache__
+*/venv/
 data-processing/workspace/
 data-processing/Results/
 data-processing/mf6
