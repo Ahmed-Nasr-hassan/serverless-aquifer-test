@@ -103,9 +103,9 @@ export default function RootLayout() {
           
           <div style={{ height: '1rem' }} />
           
-          <NavItem to="/well-data" label="Wells" icon="🏗️" disabled />
-          <NavItem to="/aquifer-data" label="Aquifer" icon="🌊" disabled />
-          <NavItem to="/optimization-results" label="Optimization" icon="🎯" disabled />
+          <NavItem to="/well-data" label="Wells" icon="🏗️" />
+          <NavItem to="/aquifer-data" label="Aquifer" icon="🌊" />
+          <NavItem to="/optimization-results" label="Optimization" icon="🎯" />
         </nav>
         
         <div style={{ 
