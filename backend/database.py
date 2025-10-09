@@ -46,5 +46,5 @@ def create_tables():
     Call this function to initialize the database schema.
     """
     # Import models to ensure they are registered with Base
-    from models import Simulation, AquiferData, OptimizationResult
+    from models import Simulation, AquiferData, OptimizationResult, WellData, ModelInput
     Base.metadata.create_all(bind=engine)

@@ -45,6 +45,25 @@ async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "aquifer-api"}
 
+# Also expose versioned health for clients using API prefix
+@app.get("/api/v1/health")
+async def health_check_v1():
+    return {"status": "healthy", "service": "aquifer-api"}
+
+@app.get("/test-db")
+async def test_database():
+    """Test database connection."""
+    from database import SessionLocal
+    from models import Simulation
+    db = SessionLocal()
+    try:
+        simulations = db.query(Simulation).all()
+        return {"count": len(simulations), "status": "ok"}
+    except Exception as e:
+        return {"error": str(e), "status": "error"}
+    finally:
+        db.close()
+
 # Include routers
 from routers import simulation_router, data_router, optimization_router, well_router, model_input_router
 from auth.routes import auth_router
@@ -52,8 +71,8 @@ from auth.routes import auth_router
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(simulation_router, prefix="/api/v1/simulations", tags=["simulations"])
 app.include_router(data_router, prefix="/api/v1/aquifer-data", tags=["aquifer-data"])
-app.include_router(optimization_router, prefix="/api/v1/optimization", tags=["optimization"])
-app.include_router(well_router, prefix="/api/v1/wells", tags=["wells"])
+app.include_router(optimization_router, prefix="/api/v1/optimization-results", tags=["optimization-results"])
+app.include_router(well_router, prefix="/api/v1/well-data", tags=["well-data"])
 app.include_router(model_input_router, prefix="/api/v1/model-inputs", tags=["model-inputs"])
 
 if __name__ == "__main__":
