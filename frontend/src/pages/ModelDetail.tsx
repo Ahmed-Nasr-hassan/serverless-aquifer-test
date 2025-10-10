@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
-import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection, HydraulicParametersSection, HydraulicConductivitySection } from '../components/ModelConfiguration'
+import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection, HydraulicParametersSection, HydraulicConductivitySection, ObservationDataSection } from '../components/ModelConfiguration'
 
 interface Model {
   id: string
@@ -326,6 +326,13 @@ export default function ModelDetail() {
                     {model.configuration.hydraulic_conductivity && (
                       <HydraulicConductivitySection 
                         data={model.configuration.hydraulic_conductivity}
+                        editable={false}
+                      />
+                    )}
+
+                    {model.configuration.model_inputs?.observation_data && (
+                      <ObservationDataSection 
+                        data={model.configuration.model_inputs.observation_data.observation_wells || {}}
                         editable={false}
                       />
                     )}

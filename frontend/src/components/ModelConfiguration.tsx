@@ -481,215 +481,612 @@ export function HydraulicConductivitySection({ data = [], editable = false, onCh
       icon="🏗️"
       editable={editable}
     >
+      <div style={{ width: '100%', overflowX: 'auto' }}>
+        <table style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontSize: '0.875rem',
+          background: 'var(--bg-card)',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          border: '1px solid var(--border-primary)'
+        }}>
+          <thead>
+            <tr style={{ background: 'var(--bg-panel)' }}>
+              <th style={{
+                padding: '0.75rem',
+                textAlign: 'left',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                borderBottom: '1px solid var(--border-primary)',
+                minWidth: '120px'
+              }}>
+                Soil Material
+              </th>
+              <th style={{
+                padding: '0.75rem',
+                textAlign: 'left',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                borderBottom: '1px solid var(--border-primary)',
+                minWidth: '100px'
+              }}>
+                Top Level (m)
+              </th>
+              <th style={{
+                padding: '0.75rem',
+                textAlign: 'left',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                borderBottom: '1px solid var(--border-primary)',
+                minWidth: '100px'
+              }}>
+                Bottom Level (m)
+              </th>
+              <th style={{
+                padding: '0.75rem',
+                textAlign: 'left',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                borderBottom: '1px solid var(--border-primary)',
+                minWidth: '180px'
+              }}>
+                Hydraulic Conductivity (m/day)
+              </th>
+              {editable && (
+                <th style={{
+                  padding: '0.75rem',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  borderBottom: '1px solid var(--border-primary)',
+                  minWidth: '80px'
+                }}>
+                  Actions
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((layer, index) => (
+              <tr key={index} style={{
+                borderBottom: index < data.length - 1 ? '1px solid var(--border-primary)' : 'none',
+                background: index % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-panel)'
+              }}>
+                <td style={{ padding: '0.75rem' }}>
+                  {editable ? (
+                    <input
+                      type="text"
+                      value={layer.soil_material}
+                      onChange={(e) => updateLayer(index, 'soil_material', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: '1px solid var(--border-primary)',
+                        borderRadius: '4px',
+                        background: 'var(--bg-card)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                  ) : (
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      {layer.soil_material}
+                    </span>
+                  )}
+                </td>
+                <td style={{ padding: '0.75rem' }}>
+                  {editable ? (
+                    <input
+                      type="number"
+                      value={layer.layer_top_level_m}
+                      onChange={(e) => updateLayer(index, 'layer_top_level_m', Number(e.target.value))}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: '1px solid var(--border-primary)',
+                        borderRadius: '4px',
+                        background: 'var(--bg-card)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                  ) : (
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      {layer.layer_top_level_m}
+                    </span>
+                  )}
+                </td>
+                <td style={{ padding: '0.75rem' }}>
+                  {editable ? (
+                    <input
+                      type="number"
+                      value={layer.layer_bottom_level_m}
+                      onChange={(e) => updateLayer(index, 'layer_bottom_level_m', Number(e.target.value))}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: '1px solid var(--border-primary)',
+                        borderRadius: '4px',
+                        background: 'var(--bg-card)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                  ) : (
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      {layer.layer_bottom_level_m}
+                    </span>
+                  )}
+                </td>
+                <td style={{ padding: '0.75rem' }}>
+                  {editable ? (
+                    <input
+                      type="number"
+                      step="0.000001"
+                      value={layer.hydraulic_conductivity_m_per_day}
+                      onChange={(e) => updateLayer(index, 'hydraulic_conductivity_m_per_day', Number(e.target.value))}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: '1px solid var(--border-primary)',
+                        borderRadius: '4px',
+                        background: 'var(--bg-card)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                  ) : (
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      {layer.hydraulic_conductivity_m_per_day}
+                    </span>
+                  )}
+                </td>
+                {editable && (
+                  <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                    <button
+                      onClick={() => removeLayer(index)}
+                      style={{
+                        background: 'var(--error)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--error-dark)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'var(--error)'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {editable && (
+          <button
+            onClick={addLayer}
+            style={{
+              width: '100%',
+              background: 'var(--blue-500)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              marginTop: '1rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--blue-600)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--blue-500)'
+            }}
+          >
+            + Add Layer
+          </button>
+        )}
+      </div>
+    </SectionCard>
+  )
+}
+
+interface ObservationWellData {
+  well_id: string
+  distance_from_well: number
+  top_screen_level: number
+  bottom_screen_level: number
+  data: {
+    time_minutes: number[]
+    water_level: number[]
+    drawdown: number[]
+  }
+}
+
+interface ObservationDataSectionProps {
+  data: Record<string, ObservationWellData>
+  editable?: boolean
+  onChange?: (wells: Record<string, ObservationWellData>) => void
+}
+
+export function ObservationDataSection({ data = {}, editable = false, onChange }: ObservationDataSectionProps) {
+  const addWell = () => {
+    const wellId = `OBS-${Object.keys(data).length + 1}`
+    const newWell: ObservationWellData = {
+      well_id: wellId,
+      distance_from_well: 50,
+      top_screen_level: -200,
+      bottom_screen_level: -300,
+      data: {
+        time_minutes: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+        water_level: [45.3, 45.82, 46.32, 46.47, 46.57, 46.63, 46.69, 46.73, 46.76, 46.79, 46.81, 46.84, 46.86],
+        drawdown: [0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39, 1.43, 1.46, 1.49, 1.51, 1.54, 1.56]
+      }
+    }
+    onChange?.({ ...data, [wellId]: newWell })
+  }
+
+  const removeWell = (wellId: string) => {
+    const newWells = { ...data }
+    delete newWells[wellId]
+    onChange?.(newWells)
+  }
+
+  const updateWell = (wellId: string, field: keyof ObservationWellData, value: any) => {
+    const newWells = { ...data }
+    newWells[wellId] = { ...newWells[wellId], [field]: value }
+    onChange?.(newWells)
+  }
+
+  const updateWellData = (wellId: string, dataField: 'time_minutes' | 'water_level' | 'drawdown', value: number[]) => {
+    const newWells = { ...data }
+    newWells[wellId] = {
+      ...newWells[wellId],
+      data: {
+        ...newWells[wellId].data,
+        [dataField]: value
+      }
+    }
+    onChange?.(newWells)
+  }
+
+  const handleCSVUpload = (wellId: string, file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const csv = e.target?.result as string
+      const lines = csv.split('\n').filter(line => line.trim())
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+      
+      const timeIndex = headers.findIndex(h => h.includes('time') || h.includes('minute'))
+      const waterIndex = headers.findIndex(h => h.includes('water') || h.includes('level'))
+      const drawdownIndex = headers.findIndex(h => h.includes('drawdown'))
+      
+      if (timeIndex === -1 || waterIndex === -1 || drawdownIndex === -1) {
+        alert('CSV must contain columns for time, water level, and drawdown')
+        return
+      }
+      
+      const timeData: number[] = []
+      const waterData: number[] = []
+      const drawdownData: number[] = []
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim())
+        if (values.length >= Math.max(timeIndex, waterIndex, drawdownIndex) + 1) {
+          timeData.push(parseFloat(values[timeIndex]) || 0)
+          waterData.push(parseFloat(values[waterIndex]) || 0)
+          drawdownData.push(parseFloat(values[drawdownIndex]) || 0)
+        }
+      }
+      
+      updateWellData(wellId, 'time_minutes', timeData)
+      updateWellData(wellId, 'water_level', waterData)
+      updateWellData(wellId, 'drawdown', drawdownData)
+    }
+    reader.readAsText(file)
+  }
+
+  const exportCSV = (wellId: string) => {
+    const well = data[wellId]
+    if (!well) return
+    
+    const csvContent = [
+      'Time (minutes),Water Level (m),Drawdown (m)',
+      ...well.data.time_minutes.map((time, index) => 
+        `${time},${well.data.water_level[index] || 0},${well.data.drawdown[index] || 0}`
+      )
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${wellId}_data.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <SectionCard 
+      title="Observation Data" 
+      icon="📊"
+      editable={editable}
+    >
       <div style={{ width: '100%' }}>
-        {data.map((layer, index) => (
-          <div key={index} style={{
+        {Object.entries(data).map(([wellId, well]) => (
+          <div key={wellId} style={{
             background: 'var(--bg-panel)',
             border: '1px solid var(--border-primary)',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1rem',
-            position: 'relative'
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '1.5rem'
           }}>
+            {/* Well Header */}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '1rem'
+              marginBottom: '1rem',
+              paddingBottom: '0.75rem',
+              borderBottom: '1px solid var(--border-primary)'
             }}>
               <h4 style={{
                 margin: 0,
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>🔍</span>
+                {wellId}
+              </h4>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {editable && (
+                  <>
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleCSVUpload(wellId, file)
+                      }}
+                      style={{ display: 'none' }}
+                      id={`csv-upload-${wellId}`}
+                    />
+                    <label
+                      htmlFor={`csv-upload-${wellId}`}
+                      style={{
+                        background: 'var(--blue-500)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '0.4rem 0.8rem',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      📁 Upload CSV
+                    </label>
+                    <button
+                      onClick={() => exportCSV(wellId)}
+                      style={{
+                        background: 'var(--success)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '0.4rem 0.8rem',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      📥 Export CSV
+                    </button>
+                    <button
+                      onClick={() => removeWell(wellId)}
+                      style={{
+                        background: 'var(--error)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '0.4rem 0.8rem',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      🗑️ Remove
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Well Properties */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1.5rem'
+            }}>
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Distance from Well (m)
+                </label>
+                {editable ? (
+                  <input
+                    type="number"
+                    value={well.distance_from_well}
+                    onChange={(e) => updateWell(wellId, 'distance_from_well', Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {well.distance_from_well}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Top Screen Level (m)
+                </label>
+                {editable ? (
+                  <input
+                    type="number"
+                    value={well.top_screen_level}
+                    onChange={(e) => updateWell(wellId, 'top_screen_level', Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {well.top_screen_level}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Bottom Screen Level (m)
+                </label>
+                {editable ? (
+                  <input
+                    type="number"
+                    value={well.bottom_screen_level}
+                    onChange={(e) => updateWell(wellId, 'bottom_screen_level', Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {well.bottom_screen_level}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Data Summary */}
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: '8px',
+              padding: '1rem'
+            }}>
+              <h5 style={{
+                margin: '0 0 0.75rem 0',
                 fontSize: '0.875rem',
                 fontWeight: '600',
                 color: 'var(--text-primary)'
               }}>
-                Layer {index + 1}
-              </h4>
-              {editable && (
-                <button
-                  onClick={() => removeLayer(index)}
-                  style={{
-                    background: 'var(--error)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '0.25rem 0.5rem',
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--error-dark)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--error)'
-                  }}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem'
-            }}>
-              <div>
-                <label style={{
-                  fontSize: '0.75rem',
-                  fontWeight: '500',
-                  color: 'var(--text-primary)',
-                  marginBottom: '0.25rem',
-                  display: 'block'
-                }}>
-                  Soil Material
-                </label>
-                {editable ? (
-                  <input
-                    type="text"
-                    value={layer.soil_material}
-                    onChange={(e) => updateLayer(index, 'soil_material', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: '1px solid var(--border-primary)',
-                      borderRadius: '6px',
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.875rem'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    padding: '0.5rem',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: '6px',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.875rem'
-                  }}>
-                    {layer.soil_material}
+                Data Summary
+              </h5>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: '1rem',
+                fontSize: '0.75rem'
+              }}>
+                <div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Data Points</div>
+                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                    {well.data.time_minutes.length}
                   </div>
-                )}
-              </div>
-
-              <div>
-                <label style={{
-                  fontSize: '0.75rem',
-                  fontWeight: '500',
-                  color: 'var(--text-primary)',
-                  marginBottom: '0.25rem',
-                  display: 'block'
-                }}>
-                  Top Level (m)
-                </label>
-                {editable ? (
-                  <input
-                    type="number"
-                    value={layer.layer_top_level_m}
-                    onChange={(e) => updateLayer(index, 'layer_top_level_m', Number(e.target.value))}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: '1px solid var(--border-primary)',
-                      borderRadius: '6px',
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.875rem'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    padding: '0.5rem',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: '6px',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.875rem'
-                  }}>
-                    {layer.layer_top_level_m}
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Time Range</div>
+                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                    {Math.min(...well.data.time_minutes)} - {Math.max(...well.data.time_minutes)} min
                   </div>
-                )}
-              </div>
-
-              <div>
-                <label style={{
-                  fontSize: '0.75rem',
-                  fontWeight: '500',
-                  color: 'var(--text-primary)',
-                  marginBottom: '0.25rem',
-                  display: 'block'
-                }}>
-                  Bottom Level (m)
-                </label>
-                {editable ? (
-                  <input
-                    type="number"
-                    value={layer.layer_bottom_level_m}
-                    onChange={(e) => updateLayer(index, 'layer_bottom_level_m', Number(e.target.value))}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: '1px solid var(--border-primary)',
-                      borderRadius: '6px',
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.875rem'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    padding: '0.5rem',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: '6px',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.875rem'
-                  }}>
-                    {layer.layer_bottom_level_m}
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Max Drawdown</div>
+                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                    {Math.max(...well.data.drawdown).toFixed(3)} m
                   </div>
-                )}
-              </div>
-
-              <div>
-                <label style={{
-                  fontSize: '0.75rem',
-                  fontWeight: '500',
-                  color: 'var(--text-primary)',
-                  marginBottom: '0.25rem',
-                  display: 'block'
-                }}>
-                  Hydraulic Conductivity (m/day)
-                </label>
-                {editable ? (
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={layer.hydraulic_conductivity_m_per_day}
-                    onChange={(e) => updateLayer(index, 'hydraulic_conductivity_m_per_day', Number(e.target.value))}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: '1px solid var(--border-primary)',
-                      borderRadius: '6px',
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.875rem'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    padding: '0.5rem',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: '6px',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.875rem'
-                  }}>
-                    {layer.hydraulic_conductivity_m_per_day}
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Min Water Level</div>
+                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                    {Math.min(...well.data.water_level).toFixed(3)} m
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -697,7 +1094,7 @@ export function HydraulicConductivitySection({ data = [], editable = false, onCh
 
         {editable && (
           <button
-            onClick={addLayer}
+            onClick={addWell}
             style={{
               width: '100%',
               background: 'var(--blue-500)',
@@ -718,7 +1115,7 @@ export function HydraulicConductivitySection({ data = [], editable = false, onCh
               e.currentTarget.style.background = 'var(--blue-500)'
             }}
           >
-            + Add Layer
+            + Add Observation Well
           </button>
         )}
       </div>

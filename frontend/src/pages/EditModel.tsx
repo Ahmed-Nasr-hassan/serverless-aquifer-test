@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
-import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection, HydraulicParametersSection, HydraulicConductivitySection } from '../components/ModelConfiguration'
+import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection, HydraulicParametersSection, HydraulicConductivitySection, ObservationDataSection } from '../components/ModelConfiguration'
 
 interface Model {
   id: string
@@ -516,6 +516,31 @@ export default function EditModel() {
                               configuration: {
                                 ...prev.configuration,
                                 hydraulic_conductivity: layers
+                              }
+                            }
+                          })
+                        }}
+                      />
+                    )}
+
+                    {formData.configuration.model_inputs?.observation_data && (
+                      <ObservationDataSection 
+                        data={formData.configuration.model_inputs.observation_data.observation_wells || {}}
+                        editable={true}
+                        onChange={(wells) => {
+                          setFormData(prev => {
+                            if (!prev) return null
+                            return {
+                              ...prev,
+                              configuration: {
+                                ...prev.configuration,
+                                model_inputs: {
+                                  ...prev.configuration.model_inputs,
+                                  observation_data: {
+                                    ...prev.configuration.model_inputs.observation_data,
+                                    observation_wells: wells
+                                  }
+                                }
                               }
                             }
                           })
