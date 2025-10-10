@@ -31,17 +31,6 @@ export default function CreateModel() {
     model_type: 'aquifer_test' as 'aquifer_test' | 'conceptual' | 'solute_transport' | 'seawater_intrusion' | 'stochastic',
     status: 'active' as 'active' | 'inactive' | 'running' | 'error',
     configuration: {
-      metadata: {
-        source_file: 'manual_input',
-        sheets: ['main'],
-        conversion_timestamp: new Date().toISOString()
-      },
-      data: {
-        user_id: '',
-        model_id: '',
-        model_inputs: {},
-        hydraulic_conductivity: []
-      },
       model_inputs: {
         radial_discretization: {
           boundary_distance_from_pumping_well: { value: 1000, unit: 'm' },

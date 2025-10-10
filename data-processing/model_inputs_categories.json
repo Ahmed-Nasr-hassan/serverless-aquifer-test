@@ -1,0 +1,67 @@
+{
+"user_id":"f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+"model_id":"a55d4fea-8wq2-6ds3-a765-00a5c91e1bf2",
+
+"radial_discretization": {
+        "Boundary distance from pumping well": {
+          "value": 500,
+          "unit": "m"
+        },
+        "2nd Column Size": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "Column Multiplier": {
+          "value": 1.1
+        }
+    },
+
+
+"vertical_discretization": {
+    "Saturated top elevation": {
+        "value": -121.84,
+        "unit": "m"
+    },
+    "Aquifer bottom elevation": {
+        "value": -500,
+        "unit": "m"
+    },
+    "Screen top - Cell thickness": {
+        "value": 0.01,
+        "unit": "m"
+    },
+    "Screen bottom- Cell thickness": {
+        "value": 0.01,
+        "unit": "m"
+    },
+    "Refinment above screen": {
+        "value": 1.6
+    },
+    "Refinment below screen": {
+        "value": 1.3
+    },
+    "Refinment between screen": {
+        "value": 1.1
+    }
+    },
+
+"pumping_well": {
+    "Well Radius": {
+        "value": 0.22,
+        "unit": "m"
+    },
+    "Q": {
+        "value": -141,
+        "unit": "m³/hr"
+    },
+    "Screen Top Elevation": {
+        "value": -212,
+        "unit": "m"
+    },
+    "Screen Bottom Elevation": {
+        "value": -378,
+        "unit": "m"
+    }
+    },
+    
+}

@@ -5,17 +5,6 @@ import { useAuth } from '../contexts/AuthContext'
 
 // Define the Model type based on the backend schema
 type ModelConfiguration = {
-  metadata: {
-    source_file: string
-    sheets: string[]
-    conversion_timestamp: string
-  }
-  data: {
-    user_id: string
-    model_id: string
-    model_inputs: any
-    hydraulic_conductivity: any[]
-  }
   model_inputs: any
   hydraulic_conductivity: any[]
 }
@@ -95,88 +84,6 @@ export default function Models() {
         description: newModel.description.trim(),
         model_type: newModel.modelType,
         configuration: {
-          metadata: {
-            source_file: "Model_Inputs.json",
-            sheets: ["Model Inputs", "Hydraulic Conductivity"],
-            conversion_timestamp: new Date().toISOString()
-          },
-          data: {
-            user_id: "default-user",
-            model_id: `model-${Date.now()}`,
-            model_inputs: {
-              radial_discretization: {
-                boundary_distance_from_pumping_well: { value: 500, unit: "m" },
-                second_column_size: { value: 0.01, unit: "m" },
-                column_multiplier: { value: 1.1 }
-              },
-              vertical_discretization: {
-                saturated_top_elevation: { value: -121.84, unit: "m" },
-                aquifer_bottom_elevation: { value: -500, unit: "m" },
-                screen_top_cell_thickness: { value: 0.01, unit: "m" },
-                screen_bottom_cell_thickness: { value: 0.01, unit: "m" },
-                refinement_above_screen: { value: 1.6 },
-                refinement_below_screen: { value: 1.3 },
-                refinement_between_screen: { value: 1.1 }
-              },
-              pumping_well: {
-                well_radius: { value: 0.22, unit: "m" },
-                pumping_rate: { value: -141, unit: "m³/hr" },
-                screen_top_elevation: { value: -212, unit: "m" },
-                screen_bottom_elevation: { value: -378, unit: "m" }
-              },
-              observation_wells: {
-                observation_wells: { value: "OBS-1", unit: "No" },
-                observation_well_distance: { value: 53 },
-                observation_top_screen_level: { value: -212 },
-                observation_bottom_screen_level: { value: -300 }
-              },
-              initial_boundary_conditions: {
-                starting_head: { value: -121.84, unit: "m" },
-                specified_head: { value: -121.84, unit: "m" }
-              },
-              stress_periods: {
-                analysis_period: { value: "Pumping + Recovery" },
-                pumping_length: { value: 2966, unit: "minutes" },
-                recovery_length: { value: 1200, unit: "minutes" },
-                number_of_time_steps: { value: 200 },
-                time_multiplier: { value: 1.05 },
-                time_units: { value: "SECONDS" }
-              },
-              hydraulic_parameters: {
-                hydraulic_conductivity: { value: 0.9073948333333328 },
-                vk_hk_ratio: { value: 1 },
-                specific_yield: { value: 0.11662639999999996 },
-                specific_storage: { value: 3.977036316666669e-07 }
-              },
-              data_files: {
-                observed_data: { value: "observation_data.json" }
-              },
-              observation_data: {
-                observation_wells: {}
-              },
-              simulation_settings: {
-                choose_type_of_simulation: { value: "Calibration" },
-                hydraulic_conductivity_flag: { value: "Yes" },
-                vk_hk_ratio_flag: { value: "No" },
-                specific_yield_flag: { value: "Yes" },
-                specific_storage_flag: { value: "Yes" }
-              }
-            },
-            hydraulic_conductivity: [
-              {
-                soil_material: "Sandstone",
-                layer_top_level_m: 0.0,
-                layer_bottom_level_m: -350.0,
-                hydraulic_conductivity_m_per_day: 0.9073948333333328
-              },
-              {
-                soil_material: "Sand",
-                layer_top_level_m: -350.0,
-                layer_bottom_level_m: -700.0,
-                hydraulic_conductivity_m_per_day: 50
-              }
-            ]
-          },
           model_inputs: {
             radial_discretization: {
               boundary_distance_from_pumping_well: { value: 500, unit: "m" },
