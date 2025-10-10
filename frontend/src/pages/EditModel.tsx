@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
+import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection } from '../components/ModelConfiguration'
 
 interface Model {
   id: string
@@ -111,6 +112,26 @@ export default function EditModel() {
     
     // Set the final value
     current[path[path.length - 1]] = value
+    
+    setFormData(prev => ({
+      ...prev,
+      configuration: newConfig
+    }))
+  }
+
+  const updateDiscretizationField = (section: string, field: string, value: number | string) => {
+    const newConfig = { ...formData.configuration }
+    if (!newConfig.model_inputs) {
+      newConfig.model_inputs = {}
+    }
+    if (!newConfig.model_inputs[section]) {
+      newConfig.model_inputs[section] = {}
+    }
+    if (!newConfig.model_inputs[section][field]) {
+      newConfig.model_inputs[section][field] = {}
+    }
+    
+    newConfig.model_inputs[section][field].value = value
     
     setFormData(prev => ({
       ...prev,
@@ -431,16 +452,49 @@ export default function EditModel() {
         </h2>
         
         <div style={{ 
-          background: 'var(--bg-panel)', 
-          border: '1px solid var(--border-primary)', 
-          borderRadius: '8px', 
-          padding: '1rem',
-          maxHeight: '600px',
-          overflowY: 'auto'
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: '1.5rem'
         }}>
-          {Object.entries(formData.configuration).map(([key, value]) => 
-            renderConfigurationField(key, value)
+          {formData.configuration.model_inputs?.radial_discretization && (
+            <RadialDiscretizationSection 
+              data={formData.configuration.model_inputs.radial_discretization}
+              editable={true}
+              onChange={(field, value) => updateDiscretizationField('radial_discretization', field, value)}
+            />
           )}
+          
+          {formData.configuration.model_inputs?.vertical_discretization && (
+            <VerticalDiscretizationSection 
+              data={formData.configuration.model_inputs.vertical_discretization}
+              editable={true}
+              onChange={(field, value) => updateDiscretizationField('vertical_discretization', field, value)}
+            />
+          )}
+
+          {formData.configuration.model_inputs?.pumping_well && (
+            <PumpingWellSection 
+              data={formData.configuration.model_inputs.pumping_well}
+              editable={true}
+              onChange={(field, value) => updateDiscretizationField('pumping_well', field, value)}
+            />
+          )}
+
+                    {formData.configuration.model_inputs?.initial_boundary_conditions && (
+                      <InitialBoundaryConditionsSection 
+                        data={formData.configuration.model_inputs.initial_boundary_conditions}
+                        editable={true}
+                        onChange={(field, value) => updateDiscretizationField('initial_boundary_conditions', field, value)}
+                      />
+                    )}
+
+                    {formData.configuration.model_inputs?.stress_periods && (
+                      <StressPeriodsSection 
+                        data={formData.configuration.model_inputs.stress_periods}
+                        editable={true}
+                        onChange={(field, value) => updateDiscretizationField('stress_periods', field, value)}
+                      />
+                    )}
         </div>
       </div>
 

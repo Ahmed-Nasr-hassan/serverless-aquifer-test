@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
+import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection } from '../components/ModelConfiguration'
 
 interface Model {
   id: string
@@ -276,16 +277,44 @@ export default function ModelDetail() {
           </h2>
           
           <div style={{ 
-            background: 'var(--bg-panel)', 
-            border: '1px solid var(--border-primary)', 
-            borderRadius: '8px', 
-            padding: '1rem',
-            maxHeight: '600px',
-            overflowY: 'auto'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+            gap: '1.5rem'
           }}>
-            {Object.entries(model.configuration).map(([key, value]) => 
-              renderConfigurationSection(key, value)
+            {model.configuration.model_inputs?.radial_discretization && (
+              <RadialDiscretizationSection 
+                data={model.configuration.model_inputs.radial_discretization}
+                editable={false}
+              />
             )}
+            
+            {model.configuration.model_inputs?.vertical_discretization && (
+              <VerticalDiscretizationSection 
+                data={model.configuration.model_inputs.vertical_discretization}
+                editable={false}
+              />
+            )}
+
+            {model.configuration.model_inputs?.pumping_well && (
+              <PumpingWellSection 
+                data={model.configuration.model_inputs.pumping_well}
+                editable={false}
+              />
+            )}
+
+                    {model.configuration.model_inputs?.initial_boundary_conditions && (
+                      <InitialBoundaryConditionsSection 
+                        data={model.configuration.model_inputs.initial_boundary_conditions}
+                        editable={false}
+                      />
+                    )}
+
+                    {model.configuration.model_inputs?.stress_periods && (
+                      <StressPeriodsSection 
+                        data={model.configuration.model_inputs.stress_periods}
+                        editable={false}
+                      />
+                    )}
           </div>
         </div>
       )}
