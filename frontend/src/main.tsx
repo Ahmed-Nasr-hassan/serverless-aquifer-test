@@ -8,6 +8,8 @@ import RootLayout from './shell/RootLayout'
 import Dashboard from './pages/Dashboard'
 import Models from './pages/Models'
 import ModelDetail from './pages/ModelDetail'
+import EditModel from './pages/EditModel'
+import CreateModel from './pages/CreateModel'
 import Simulations from './pages/Simulations'
 import CreateSimulation from './pages/CreateSimulation'
 import EditSimulation from './pages/EditSimulation'
@@ -22,7 +24,8 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'models', element: <Models /> },
       { path: 'models/:id', element: <ModelDetail /> },
-      { path: 'models/create', element: <Models /> }, // For now, redirect to models list
+      { path: 'models/:id/edit', element: <EditModel /> },
+      { path: 'models/create', element: <CreateModel /> },
               { path: 'simulations', element: <Simulations /> },
               { path: 'simulations/create', element: <CreateSimulation /> },
               { path: 'simulations/edit/:id', element: <EditSimulation /> },

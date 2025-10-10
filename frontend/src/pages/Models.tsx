@@ -418,7 +418,7 @@ export default function Models() {
             Models
           </h1>
           <button 
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => navigate('/models/create')}
             style={{
               background: 'var(--blue-500)',
               color: 'white',
