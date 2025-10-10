@@ -110,7 +110,7 @@ export default function RootLayout() {
         flexDirection: 'column',
         boxShadow: '2px 0 8px rgba(0, 0, 0, 0.05)',
         width: isMobile ? '280px' : (sidebarCollapsed ? '64px' : '280px'),
-        position: isMobile ? 'fixed' : 'relative',
+        position: isMobile ? 'fixed' : 'sticky',
         top: 0,
         left: 0,
         height: '100vh',
@@ -119,7 +119,8 @@ export default function RootLayout() {
         transition: 'all 0.3s ease',
         flexShrink: 0,
         margin: 0,
-        padding: 0
+        padding: 0,
+        overflowY: 'auto'
       }}>
         <div style={{ 
           padding: '1.5rem 1.25rem', 
@@ -223,12 +224,14 @@ export default function RootLayout() {
         flexDirection: 'column', 
         flex: 1,
         minHeight: '100vh',
-        overflow: 'hidden'
+        overflow: 'auto'
       }}>
-        <Topbar 
-          onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
-          isMobile={isMobile}
-        />
+        <div style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+          <Topbar 
+            onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+            isMobile={isMobile}
+          />
+        </div>
         <div style={{ padding: '1.5rem', flex: 1 }}>
           <Outlet />
         </div>
