@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
-import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection } from '../components/ModelConfiguration'
+import { RadialDiscretizationSection, VerticalDiscretizationSection, PumpingWellSection, InitialBoundaryConditionsSection, StressPeriodsSection, HydraulicParametersSection, HydraulicConductivitySection } from '../components/ModelConfiguration'
 
 interface Model {
   id: string
@@ -493,6 +493,33 @@ export default function EditModel() {
                         data={formData.configuration.model_inputs.stress_periods}
                         editable={true}
                         onChange={(field, value) => updateDiscretizationField('stress_periods', field, value)}
+                      />
+                    )}
+
+                    {formData.configuration.model_inputs?.hydraulic_parameters && (
+                      <HydraulicParametersSection 
+                        data={formData.configuration.model_inputs.hydraulic_parameters}
+                        editable={true}
+                        onChange={(field, value) => updateDiscretizationField('hydraulic_parameters', field, value)}
+                      />
+                    )}
+
+                    {formData.configuration.hydraulic_conductivity && (
+                      <HydraulicConductivitySection 
+                        data={formData.configuration.hydraulic_conductivity}
+                        editable={true}
+                        onChange={(layers) => {
+                          setFormData(prev => {
+                            if (!prev) return null
+                            return {
+                              ...prev,
+                              configuration: {
+                                ...prev.configuration,
+                                hydraulic_conductivity: layers
+                              }
+                            }
+                          })
+                        }}
                       />
                     )}
         </div>

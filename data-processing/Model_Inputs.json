@@ -69,21 +69,6 @@
           "unit": "m"
         }
       },
-      "observation_wells": {
-        "Observation Wells": {
-          "value": "OBS-1",
-          "unit": "No"
-        },
-        "Observation Well Distance (m)": {
-          "value": 53
-        },
-        "Observation Top Screen Level (m)": {
-          "value": -212
-        },
-        "Observation Bottom Screen Level (m)": {
-          "value": -300
-        }
-      },
       "initial_boundary_conditions": {
         "Starting Head": {
           "value": -121.84,
@@ -117,9 +102,6 @@
         }
       },
       "hydraulic_parameters": {
-        "Hydraulic Conductivity": {
-          "value": 0.9073948333333328
-        },
         "Vk/Hk Ratio": {
           "value": 1
         },
@@ -163,7 +145,7 @@
       },
       "simulation_settings": {
         "Choose Type of Simulation": {
-          "value": "Calibration"
+          "value": "Forward Run"
         },
         "Hydraulic Conductivity Flag": {
           "value": "Yes"

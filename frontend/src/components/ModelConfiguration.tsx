@@ -398,6 +398,334 @@ export function InitialBoundaryConditionsSection({ data, editable = false, onCha
   )
 }
 
+export function HydraulicParametersSection({ data, editable = false, onChange }: DiscretizationSectionProps) {
+  const fields = [
+    {
+      key: 'vk_hk_ratio',
+      label: 'Vk/Hk Ratio',
+      value: data?.vk_hk_ratio?.value || 1,
+      unit: undefined
+    },
+    {
+      key: 'specific_yield',
+      label: 'Specific Yield (Sy)',
+      value: data?.specific_yield?.value || 0.11662639999999996,
+      unit: undefined
+    },
+    {
+      key: 'specific_storage',
+      label: 'Specific Storage (Ss)',
+      value: data?.specific_storage?.value || 3.977036316666669e-07,
+      unit: undefined
+    }
+  ]
+
+  return (
+    <SectionCard 
+      title="Hydraulic Parameters" 
+      icon="💧"
+      editable={editable}
+    >
+      {fields.map(field => (
+        <ParameterField
+          key={field.key}
+          label={field.label}
+          value={field.value}
+          unit={field.unit}
+          editable={editable}
+          onChange={(value) => onChange?.(field.key, value)}
+        />
+      ))}
+    </SectionCard>
+  )
+}
+
+interface HydraulicConductivityLayer {
+  soil_material: string
+  layer_top_level_m: number
+  layer_bottom_level_m: number
+  hydraulic_conductivity_m_per_day: number
+}
+
+interface HydraulicConductivitySectionProps {
+  data: HydraulicConductivityLayer[]
+  editable?: boolean
+  onChange?: (layers: HydraulicConductivityLayer[]) => void
+}
+
+export function HydraulicConductivitySection({ data = [], editable = false, onChange }: HydraulicConductivitySectionProps) {
+  const addLayer = () => {
+    const newLayer: HydraulicConductivityLayer = {
+      soil_material: 'New Material',
+      layer_top_level_m: 0,
+      layer_bottom_level_m: -100,
+      hydraulic_conductivity_m_per_day: 1.0
+    }
+    onChange?.([...data, newLayer])
+  }
+
+  const removeLayer = (index: number) => {
+    const newLayers = data.filter((_, i) => i !== index)
+    onChange?.(newLayers)
+  }
+
+  const updateLayer = (index: number, field: keyof HydraulicConductivityLayer, value: string | number) => {
+    const newLayers = [...data]
+    newLayers[index] = { ...newLayers[index], [field]: value }
+    onChange?.(newLayers)
+  }
+
+  return (
+    <SectionCard 
+      title="Hydraulic Conductivity Layers" 
+      icon="🏗️"
+      editable={editable}
+    >
+      <div style={{ width: '100%' }}>
+        {data.map((layer, index) => (
+          <div key={index} style={{
+            background: 'var(--bg-panel)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1rem',
+            position: 'relative'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem'
+            }}>
+              <h4 style={{
+                margin: 0,
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: 'var(--text-primary)'
+              }}>
+                Layer {index + 1}
+              </h4>
+              {editable && (
+                <button
+                  onClick={() => removeLayer(index)}
+                  style={{
+                    background: 'var(--error)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--error-dark)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--error)'
+                  }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem'
+            }}>
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Soil Material
+                </label>
+                {editable ? (
+                  <input
+                    type="text"
+                    value={layer.soil_material}
+                    onChange={(e) => updateLayer(index, 'soil_material', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {layer.soil_material}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Top Level (m)
+                </label>
+                {editable ? (
+                  <input
+                    type="number"
+                    value={layer.layer_top_level_m}
+                    onChange={(e) => updateLayer(index, 'layer_top_level_m', Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {layer.layer_top_level_m}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Bottom Level (m)
+                </label>
+                {editable ? (
+                  <input
+                    type="number"
+                    value={layer.layer_bottom_level_m}
+                    onChange={(e) => updateLayer(index, 'layer_bottom_level_m', Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {layer.layer_bottom_level_m}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                  display: 'block'
+                }}>
+                  Hydraulic Conductivity (m/day)
+                </label>
+                {editable ? (
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={layer.hydraulic_conductivity_m_per_day}
+                    onChange={(e) => updateLayer(index, 'hydraulic_conductivity_m_per_day', Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: '6px',
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem'
+                  }}>
+                    {layer.hydraulic_conductivity_m_per_day}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {editable && (
+          <button
+            onClick={addLayer}
+            style={{
+              width: '100%',
+              background: 'var(--blue-500)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              marginTop: '0.5rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--blue-600)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--blue-500)'
+            }}
+          >
+            + Add Layer
+          </button>
+        )}
+      </div>
+    </SectionCard>
+  )
+}
+
 export function StressPeriodsSection({ data, editable = false, onChange }: DiscretizationSectionProps) {
   const analysisPeriod = data?.analysis_period?.value || 'Pumping + Recovery'
   
