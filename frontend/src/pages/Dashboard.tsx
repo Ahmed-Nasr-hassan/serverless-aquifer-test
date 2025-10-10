@@ -15,11 +15,14 @@ export default function Dashboard() {
 
     const fetchStats = async () => {
       try {
-        const simRes = await axios.get('/api/v1/simulations/')
+        const [simRes, modelRes] = await Promise.all([
+          axios.get('/api/v1/simulations/'),
+          axios.get('/api/v1/models/')
+        ])
         
         setStats({
           simulations: Array.isArray(simRes.data) ? simRes.data.length : 0,
-          models: 3 // Mock data for now
+          models: Array.isArray(modelRes.data) ? modelRes.data.length : 0
         })
       } catch (error) {
         console.error('Failed to fetch stats:', error)
