@@ -5,6 +5,7 @@ API routes for Simulation entity with authentication.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import uuid
 from database import get_db
 from models.simulation import Simulation
 from models.model import Model
@@ -61,7 +62,7 @@ async def get_simulations(
 
 @simulation_router.get("/{simulation_id}", response_model=SimulationResponse)
 async def get_simulation(
-    simulation_id: int, 
+    simulation_id: uuid.UUID, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -81,7 +82,7 @@ async def get_simulation(
 
 @simulation_router.put("/{simulation_id}", response_model=SimulationResponse)
 async def update_simulation(
-    simulation_id: int, 
+    simulation_id: uuid.UUID, 
     simulation_update: SimulationUpdate, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -109,7 +110,7 @@ async def update_simulation(
 
 @simulation_router.delete("/{simulation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_simulation(
-    simulation_id: int, 
+    simulation_id: uuid.UUID, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -132,7 +133,7 @@ async def delete_simulation(
 
 @simulation_router.get("/model/{model_id}", response_model=List[SimulationResponse])
 async def get_simulations_by_model(
-    model_id: int, 
+    model_id: uuid.UUID, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):

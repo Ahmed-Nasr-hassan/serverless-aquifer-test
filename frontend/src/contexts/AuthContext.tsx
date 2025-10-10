@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import axios from 'axios'
 
 interface User {
-  id: number
+  id: string
   email: string
   full_name: string
   is_active: boolean

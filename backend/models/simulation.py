@@ -2,18 +2,20 @@
 Simulation model for storing simulation runs and results.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Float, Text, ForeignKey, JSON
+from sqlalchemy import Column, String, DateTime, Float, Text, ForeignKey, JSON, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
+import uuid
 
 
 class Simulation(Base):
     """Model for storing simulation runs and results."""
     __tablename__ = "simulations"
     
-    id = Column(Integer, primary_key=True, index=True)
-    model_id = Column(Integer, ForeignKey("models.id"), nullable=False, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    model_id = Column(UUID(as_uuid=True), ForeignKey("models.id"), nullable=False, index=True)
     
     # Simulation details
     name = Column(String(255), nullable=False, index=True)
@@ -36,7 +38,7 @@ class Simulation(Base):
     total_simulation_time_steps = Column(Integer)
     
     # User association
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     
     # Relationships
     model = relationship("Model", back_populates="simulations")

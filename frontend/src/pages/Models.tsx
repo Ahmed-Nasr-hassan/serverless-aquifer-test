@@ -21,7 +21,7 @@ type ModelConfiguration = {
 }
 
 type Model = {
-  id: number
+  id: string
   name: string
   description: string
   model_type: 'aquifer_test' | 'conceptual' | 'solute_transport' | 'seawater_intrusion' | 'stochastic'
@@ -29,7 +29,7 @@ type Model = {
   status: 'active' | 'inactive' | 'running' | 'error'
   created_at: string
   updated_at?: string
-  user_id: number
+  user_id: string
 }
 
 type ModelCreateData = {
@@ -307,7 +307,7 @@ export default function Models() {
   }
 
   // Delete model
-  const handleDeleteModel = async (modelId: number) => {
+  const handleDeleteModel = async (modelId: string) => {
     if (!confirm('Are you sure you want to delete this model? This action cannot be undone.')) {
       return
     }

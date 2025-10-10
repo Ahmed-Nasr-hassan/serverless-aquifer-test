@@ -4,6 +4,7 @@ Authentication utilities for JWT tokens and password hashing.
 
 import os
 import hashlib
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional, Union
 from jose import JWTError, jwt
@@ -49,11 +50,14 @@ def verify_token(token: str) -> Optional[TokenData]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
-        user_id: int = payload.get("user_id")
+        user_id_str = payload.get("user_id")
         
-        if email is None or user_id is None:
+        if email is None or user_id_str is None:
             return None
-            
+        try:
+            user_id = uuid.UUID(user_id_str)
+        except Exception:
+            return None
         return TokenData(email=email, user_id=user_id)
     except JWTError:
         return None

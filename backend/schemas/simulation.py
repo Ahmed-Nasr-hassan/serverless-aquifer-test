@@ -5,17 +5,18 @@ Pydantic schemas for Simulation entity.
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
+import uuid
 
 
 class SimulationBase(BaseModel):
     """Base schema for Simulation."""
-    model_id: int = Field(..., gt=0)
+    model_id: uuid.UUID
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     simulation_type: str = Field(..., min_length=1, max_length=100)
     status: Optional[str] = "pending"  # pending, running, completed, failed
     results: Optional[Dict[str, Any]] = None  # Simulation results
-    user_id: int
+    user_id: uuid.UUID
 
 
 class SimulationCreate(SimulationBase):
@@ -38,7 +39,7 @@ class SimulationUpdate(BaseModel):
 
 class SimulationResponse(SimulationBase):
     """Schema for Simulation response."""
-    id: int
+    id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None

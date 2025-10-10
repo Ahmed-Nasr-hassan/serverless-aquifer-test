@@ -5,6 +5,7 @@ Pydantic schemas for User entity and authentication.
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional
 from datetime import datetime
+import uuid
 
 
 class UserBase(BaseModel):
@@ -27,7 +28,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     """Schema for User response."""
-    id: int
+    id: uuid.UUID
     is_active: bool
     is_verified: bool
     created_at: datetime
@@ -55,7 +56,7 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     """Schema for token data."""
     email: Optional[str] = None
-    user_id: Optional[int] = None
+    user_id: Optional[uuid.UUID] = None
 
 
 class PasswordChange(BaseModel):

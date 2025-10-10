@@ -5,6 +5,7 @@ API routes for Model entity with authentication.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import uuid
 from database import get_db
 from models.model import Model
 from models.user import User
@@ -55,7 +56,7 @@ def get_models(
 
 @models_router.get("/{model_id}", response_model=ModelResponse)
 def get_model(
-    model_id: int, 
+    model_id: uuid.UUID, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -75,7 +76,7 @@ def get_model(
 
 @models_router.put("/{model_id}", response_model=ModelResponse)
 def update_model(
-    model_id: int, 
+    model_id: uuid.UUID, 
     model_update: ModelUpdate, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -106,7 +107,7 @@ def update_model(
 
 @models_router.delete("/{model_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_model(
-    model_id: int, 
+    model_id: uuid.UUID, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):

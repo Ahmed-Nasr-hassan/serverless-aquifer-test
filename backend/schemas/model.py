@@ -5,6 +5,7 @@ Pydantic schemas for Model entity based on Model_Inputs.json structure.
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, Literal, List
 from datetime import datetime
+import uuid
 
 
 class RadialDiscretization(BaseModel):
@@ -157,8 +158,8 @@ class ModelUpdate(BaseModel):
 
 class ModelResponse(ModelBase):
     """Schema for Model response."""
-    id: int
-    user_id: int
+    id: uuid.UUID
+    user_id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
     
