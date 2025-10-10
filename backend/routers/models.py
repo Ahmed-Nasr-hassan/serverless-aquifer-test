@@ -21,9 +21,18 @@ def create_model(
     current_user: User = Depends(get_current_active_user)
 ):
     """Create a new model."""
-    # Override user_id with current user's ID
+    # Build create payload with defaults; user_id from auth
     model_data = model.dict()
+    if model_data.get("configuration") is None:
+        # Provide minimal default configuration to satisfy DB JSON column
+        model_data["configuration"] = {}
+    if model_data.get("status") is None:
+        model_data["status"] = "active"
     model_data["user_id"] = current_user.id
+    
+    # Convert configuration to dict if it's a Pydantic model
+    if hasattr(model_data["configuration"], 'dict'):
+        model_data["configuration"] = model_data["configuration"].dict()
     
     db_model = Model(**model_data)
     db.add(db_model)
@@ -85,6 +94,9 @@ def update_model(
     
     update_data = model_update.dict(exclude_unset=True)
     for field, value in update_data.items():
+        # Convert configuration to dict if it's a Pydantic model
+        if field == "configuration" and hasattr(value, 'dict'):
+            value = value.dict()
         setattr(model, field, value)
     
     db.commit()

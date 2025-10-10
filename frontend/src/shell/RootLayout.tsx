@@ -191,7 +191,7 @@ export default function RootLayout() {
               fontSize: '0.75rem',
               marginBottom: '0.5rem'
             }}>
-              Logged in as: <strong style={{ color: 'var(--text-primary)' }}>{user?.username}</strong>
+              Logged in as: <strong style={{ color: 'var(--text-primary)' }}>{user?.full_name}</strong>
             </div>
           )}
           <button 
@@ -239,6 +239,7 @@ export default function RootLayout() {
 
 function Topbar({ onMenuToggle, isMobile }: { onMenuToggle: () => void; isMobile: boolean }) {
   const { isDarkMode, toggleTheme } = useTheme()
+  const { user } = useAuth()
   
   return (
     <div style={{
@@ -292,6 +293,54 @@ function Topbar({ onMenuToggle, isMobile }: { onMenuToggle: () => void; isMobile
         alignItems: 'center',
         gap: '0.75rem'
       }}>
+        {/* User Info */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.5rem 0.75rem',
+          background: 'var(--bg-card)',
+          borderRadius: '8px',
+          border: '1px solid var(--border-primary)',
+          fontSize: '0.875rem'
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--blue-500), var(--purple-500))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '0.75rem',
+            fontWeight: '600'
+          }}>
+            {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+          </div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start'
+          }}>
+            <div style={{
+              color: 'var(--text-primary)',
+              fontWeight: '500',
+              fontSize: '0.875rem',
+              lineHeight: '1.2'
+            }}>
+              {user?.full_name || 'User'}
+            </div>
+            <div style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.75rem',
+              lineHeight: '1.2'
+            }}>
+              {user?.email}
+            </div>
+          </div>
+        </div>
+        
         <button
           onClick={toggleTheme}
           style={{
