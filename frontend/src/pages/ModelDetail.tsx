@@ -363,7 +363,7 @@ export default function ModelDetail() {
         </button>
         
         <button
-          onClick={() => navigate(`/simulations?model=${model.id}`)}
+          onClick={() => navigate(`/simulations/create?model=${model.id}`)}
           style={{
             background: 'var(--success)',
             color: 'white',

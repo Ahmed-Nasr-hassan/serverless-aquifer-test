@@ -1,19 +1,55 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function CreateSimulation() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [model, setModel] = useState<any>(null)
+  const [loadingModel, setLoadingModel] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     simulation_type: 'Optimization',
-    status: 'pending'
+    status: 'pending',
+    model_id: '',
+    simulation_settings: {
+      choose_type_of_simulation: 'Forward Run',
+      hydraulic_conductivity_flag: 'Yes',
+      vk_hk_ratio_flag: 'No',
+      specific_yield_flag: 'Yes',
+      specific_storage_flag: 'Yes'
+    }
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Load model if model_id is provided in URL
+  useEffect(() => {
+    const modelId = searchParams.get('model')
+    if (modelId && isAuthenticated) {
+      setLoadingModel(true)
+      axios.get(`/api/v1/models/${modelId}`)
+        .then(response => {
+          setModel(response.data)
+          setFormData(prev => ({
+            ...prev,
+            model_id: modelId,
+            name: `Simulation for ${response.data.name}`,
+            description: `Simulation based on model: ${response.data.name}`
+          }))
+        })
+        .catch(err => {
+          console.error('Failed to load model:', err)
+          setError('Failed to load model information')
+        })
+        .finally(() => {
+          setLoadingModel(false)
+        })
+    }
+  }, [searchParams, isAuthenticated])
 
   if (!isAuthenticated) {
     return (
@@ -32,6 +68,29 @@ export default function CreateSimulation() {
           </h3>
           <p style={{ color: 'var(--text-disabled)', margin: 0 }}>
             Authentication required to create simulations
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loadingModel) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '400px',
+        background: 'var(--bg-card)',
+        borderRadius: '12px',
+        border: '1px solid var(--border-primary)'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
+            Loading model information...
+          </h3>
+          <p style={{ color: 'var(--text-disabled)', margin: 0 }}>
+            Please wait while we fetch the model details
           </p>
         </div>
       </div>
@@ -66,6 +125,16 @@ export default function CreateSimulation() {
     }))
   }
 
+  const handleSimulationSettingChange = (setting: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      simulation_settings: {
+        ...prev.simulation_settings,
+        [setting]: value
+      }
+    }))
+  }
+
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
@@ -85,6 +154,54 @@ export default function CreateSimulation() {
           Start a new aquifer simulation
         </p>
       </div>
+
+      {/* Model Information Section */}
+      {model && (
+        <div style={{
+          background: 'var(--bg-panel)',
+          border: '1px solid var(--border-primary)',
+          borderRadius: '12px',
+          padding: '1.5rem',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{ 
+            margin: '0 0 1rem 0', 
+            color: 'var(--text-primary)',
+            fontSize: '1.125rem',
+            fontWeight: '600'
+          }}>
+            📊 Model Information
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Model Name</div>
+              <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{model.name}</div>
+            </div>
+            <div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Model Type</div>
+              <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                {model.model_type === 'aquifer_test' ? '🔬 Aquifer Test Analysis' : model.model_type}
+              </div>
+            </div>
+            <div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Status</div>
+              <div style={{ 
+                fontWeight: '600',
+                color: model.status === 'active' ? 'var(--success)' : 'var(--warning)'
+              }}>
+                {model.status.charAt(0).toUpperCase() + model.status.slice(1)}
+              </div>
+            </div>
+          </div>
+          {model.description && (
+            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-primary)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Description</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: '0.875rem' }}>{model.description}</div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{
         background: 'var(--bg-card)',
@@ -154,68 +271,174 @@ export default function CreateSimulation() {
             />
           </div>
 
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem', 
-              color: 'var(--text-secondary)',
-              fontSize: '0.875rem',
-              fontWeight: '500'
+          {/* Simulation Settings Section */}
+          <div style={{ 
+            marginBottom: '1.5rem',
+            padding: '1.5rem',
+            background: 'var(--bg-panel)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: '8px'
+          }}>
+            <h3 style={{ 
+              margin: '0 0 1rem 0', 
+              color: 'var(--text-primary)',
+              fontSize: '1.125rem',
+              fontWeight: '600'
             }}>
-              Simulation Type *
-            </label>
-            <select 
-              name="simulation_type"
-              value={formData.simulation_type}
-              onChange={handleChange}
-              required
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid var(--border-primary)',
-                background: 'var(--bg-tertiary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="Optimization">Optimization</option>
-              <option value="Prediction">Prediction</option>
-              <option value="Sensitivity">Sensitivity Analysis</option>
-            </select>
-          </div>
+              Simulation Settings
+            </h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+              {/* Choose Type of Simulation */}
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Choose Type of Simulation *
+                </label>
+                <select 
+                  value={formData.simulation_settings.choose_type_of_simulation}
+                  onChange={(e) => handleSimulationSettingChange('choose_type_of_simulation', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-primary)',
+                    background: 'var(--bg-tertiary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Forward Run">Forward Run</option>
+                  <option value="Optimization">Optimization</option>
+                </select>
+              </div>
 
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem', 
-              color: 'var(--text-secondary)',
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}>
-              Initial Status
-            </label>
-            <select 
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid var(--border-primary)',
-                background: 'var(--bg-tertiary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value="pending">Pending</option>
-              <option value="running">Running</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-            </select>
+              {/* Hydraulic Conductivity Flag */}
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Hydraulic Conductivity Flag *
+                </label>
+                <select 
+                  value={formData.simulation_settings.hydraulic_conductivity_flag}
+                  onChange={(e) => handleSimulationSettingChange('hydraulic_conductivity_flag', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-primary)',
+                    background: 'var(--bg-tertiary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Vk/Hk Ratio Flag */}
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Vk/Hk Ratio Flag *
+                </label>
+                <select 
+                  value={formData.simulation_settings.vk_hk_ratio_flag}
+                  onChange={(e) => handleSimulationSettingChange('vk_hk_ratio_flag', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-primary)',
+                    background: 'var(--bg-tertiary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Specific Yield Flag */}
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Specific Yield (Sy) Flag *
+                </label>
+                <select 
+                  value={formData.simulation_settings.specific_yield_flag}
+                  onChange={(e) => handleSimulationSettingChange('specific_yield_flag', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-primary)',
+                    background: 'var(--bg-tertiary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Specific Storage Flag */}
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  Specific Storage (Ss) Flag *
+                </label>
+                <select 
+                  value={formData.simulation_settings.specific_storage_flag}
+                  onChange={(e) => handleSimulationSettingChange('specific_storage_flag', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-primary)',
+                    background: 'var(--bg-tertiary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           {error && (

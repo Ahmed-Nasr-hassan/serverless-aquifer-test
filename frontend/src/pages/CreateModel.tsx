@@ -11,6 +11,14 @@ const MODEL_TYPE_LABELS = {
   stochastic: 'Stochastic Model'
 }
 
+const MODEL_TYPE_STATUS = {
+  aquifer_test: 'available',
+  conceptual: 'coming_soon',
+  solute_transport: 'coming_soon',
+  seawater_intrusion: 'coming_soon',
+  stochastic: 'coming_soon'
+}
+
 const MODEL_TYPE_ICONS = {
   aquifer_test: '🔬',
   conceptual: '🧠',
@@ -204,13 +212,30 @@ export default function CreateModel() {
           marginBottom: '1.5rem'
         }}>
           <h2 style={{ 
-            margin: '0 0 1.5rem 0', 
+            margin: '0 0 1rem 0', 
             fontSize: '1.25rem', 
             fontWeight: '600',
             color: 'var(--text-primary)'
           }}>
             Basic Information
           </h2>
+          
+          <div style={{
+            background: 'var(--blue-50)',
+            border: '1px solid var(--blue-200)',
+            borderRadius: '8px',
+            padding: '0.75rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <span style={{ fontSize: '1.25rem' }}>ℹ️</span>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+              <strong>Currently Available:</strong> Only Aquifer Test Analysis models can be created at this time. 
+              Other model types are coming soon and will be available in future updates.
+            </div>
+          </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             <div>
@@ -252,30 +277,68 @@ export default function CreateModel() {
                 Model Type
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {Object.entries(MODEL_TYPE_LABELS).map(([key, label]) => (
-                  <label key={key} style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    borderRadius: '6px',
-                    background: formData.model_type === key ? 'var(--blue-50)' : 'transparent',
-                    border: formData.model_type === key ? '1px solid var(--blue-500)' : '1px solid var(--border-primary)'
-                  }}>
-                    <input
-                      type="radio"
-                      name="model_type"
-                      value={key}
-                      checked={formData.model_type === key}
-                      onChange={(e) => setFormData(prev => ({ ...prev, model_type: e.target.value as any }))}
-                      style={{ marginRight: '0.5rem' }}
-                    />
-                    <span style={{ fontSize: '1.25rem', marginRight: '0.5rem' }}>
-                      {MODEL_TYPE_ICONS[key as keyof typeof MODEL_TYPE_ICONS]}
-                    </span>
-                    <span style={{ fontSize: '0.875rem' }}>{label}</span>
-                  </label>
-                ))}
+                {Object.entries(MODEL_TYPE_LABELS).map(([key, label]) => {
+                  const isAvailable = MODEL_TYPE_STATUS[key as keyof typeof MODEL_TYPE_STATUS] === 'available'
+                  const isSelected = formData.model_type === key
+                  
+                  return (
+                    <label key={key} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      cursor: isAvailable ? 'pointer' : 'not-allowed',
+                      padding: '0.5rem',
+                      borderRadius: '6px',
+                      background: isSelected ? 'var(--blue-50)' : 'transparent',
+                      border: isSelected ? '1px solid var(--blue-500)' : '1px solid var(--border-primary)',
+                      opacity: isAvailable ? 1 : 0.6,
+                      position: 'relative'
+                    }}>
+                      <input
+                        type="radio"
+                        name="model_type"
+                        value={key}
+                        checked={isSelected}
+                        disabled={!isAvailable}
+                        onChange={(e) => {
+                          if (isAvailable) {
+                            setFormData(prev => ({ ...prev, model_type: e.target.value as any }))
+                          }
+                        }}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ fontSize: '1.25rem', marginRight: '0.5rem' }}>
+                        {MODEL_TYPE_ICONS[key as keyof typeof MODEL_TYPE_ICONS]}
+                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                        <span style={{ fontSize: '0.875rem' }}>{label}</span>
+                        {!isAvailable && (
+                          <span style={{ 
+                            fontSize: '0.75rem', 
+                            color: 'var(--text-muted)',
+                            fontStyle: 'italic'
+                          }}>
+                            Coming Soon
+                          </span>
+                        )}
+                      </div>
+                      {!isAvailable && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '0.25rem',
+                          right: '0.25rem',
+                          background: 'var(--warning)',
+                          color: 'white',
+                          fontSize: '0.625rem',
+                          padding: '0.125rem 0.375rem',
+                          borderRadius: '4px',
+                          fontWeight: '600'
+                        }}>
+                          SOON
+                        </div>
+                      )}
+                    </label>
+                  )
+                })}
               </div>
             </div>
           </div>

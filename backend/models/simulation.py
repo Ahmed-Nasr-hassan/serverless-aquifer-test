@@ -23,7 +23,8 @@ class Simulation(Base):
     simulation_type = Column(String(100), nullable=False)  # "Forward Run", "Optimization", etc.
     status = Column(String(50), default="pending")  # pending, running, completed, failed
     
-    # Results as JSON
+    # Settings and results as JSON
+    simulation_settings = Column(JSON)  # Simulation configuration and parameters
     results = Column(JSON)  # All simulation results and analysis
     
     # Execution metadata

@@ -132,30 +132,82 @@ def create_test_data():
             description="Forward simulation run for aquifer model",
             simulation_type="Forward Run",
             status="completed",
-            results={
-                "drawdownData": [
-                    {"time": 0, "drawdown": 0},
-                    {"time": 5, "drawdown": 0.5},
-                    {"time": 10, "drawdown": 1.0},
-                    {"time": 15, "drawdown": 1.4},
-                    {"time": 20, "drawdown": 1.8}
-                ],
-                "analysisResults": {
-                    "rmse": 0.15,
-                    "totalError": 2.3,
-                    "radiusOfInfluence": 150.5,
-                    "convergenceAchieved": True
+            simulation_settings={
+                "Choose Type of Simulation": {
+                    "value": "Forward Run"
                 },
-                "performanceMetrics": {
-                    "simulationTime": 45.2,
-                    "memoryUsage": "128MB",
-                    "cpuUsage": "15%"
+                "Hydraulic Conductivity Flag": {
+                    "value": "Yes"
+                },
+                "Vk/Hk Ratio Flag": {
+                    "value": "No"
+                },
+                "Specific Yield (Sy) Flag": {
+                    "value": "Yes"
+                },
+                "Specific Storage (Ss) Flag": {
+                    "value": "Yes"
                 }
             },
-            radius_of_influence_meters=150.5,
+            results={
+                "metadata": {
+                    "simulation_type": "Pumping + Recovery",
+                    "pumping_length_seconds": 177960,
+                    "generated_at": "2025-01-04T20:59:25.241926",
+                    "total_simulation_time_steps": 400
+                },
+                "summary": {
+                    "radius_of_influence_meters": 195.65,
+                    "total_wells_analyzed": 2
+                },
+                "simulation_times": [0.5145856873998947, 1.0549006591697843, 1.6222313795281682, 2.2179286359044714, 2.84341075509959, 3.5001669802544644],
+                "wells": {
+                    "OBS-1": {
+                        "well_id": "OBS-1",
+                        "distance_from_pumping_well_meters": [0.11, 0.225, 0.23550000000000001, 0.24705000000000005, 0.25975500000000007],
+                        "simulation_results": {
+                            "simulated_drawdown_meters": [-3.655990961625043e-06, -3.5547425368697027e-06, -3.2148930490589264e-06, -2.296674255417328e-06],
+                            "observed_drawdown_meters": [0, 0.52, 1.02, 1.17, 1.27],
+                            "observed_time_seconds": [0, 300, 600, 900, 1200, 1500, 1800],
+                            "avg_head_at_distance_meters": [-143.07964404261162, -140.41935299597378, -140.25016407225218, -140.07295579250209, -139.8877866733983]
+                        },
+                        "interpolation_results": {
+                            "rmse": 0.3871,
+                            "total_residual_error": 316.1503,
+                            "interpolated_times": [0, 300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300],
+                            "interpolated_observed_drawdown": [0.0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39],
+                            "interpolated_simulated_drawdown": [-3.752418032820605e-06, 0.25951029899853684, 0.47364193480655914, 0.628128751613359]
+                        },
+                        "files_generated": {
+                            "json_results": "Results/simulation_results.json"
+                        }
+                    },
+                    "OBS-2": {
+                        "well_id": "OBS-2",
+                        "distance_from_pumping_well_meters": [0.11, 0.225, 0.23550000000000001, 0.24705000000000005, 0.25975500000000007],
+                        "simulation_results": {
+                            "simulated_drawdown_meters": [-3.655990961625043e-06, -3.5547425368697027e-06, -3.2148930490589264e-06, -2.296674255417328e-06],
+                            "observed_drawdown_meters": [0, 0.52, 1.02, 1.17, 1.27],
+                            "observed_time_seconds": [0, 300, 600, 900, 1200, 1500, 1800],
+                            "avg_head_at_distance_meters": [-143.07964404261162, -140.41935299597378, -140.25016407225218, -140.07295579250209, -139.8877866733983]
+                        },
+                        "interpolation_results": {
+                            "rmse": 0.63871,
+                            "total_residual_error": 210.1503,
+                            "interpolated_times": [0, 300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300],
+                            "interpolated_observed_drawdown": [0.0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39],
+                            "interpolated_simulated_drawdown": [-3.752418032820605e-06, 0.25951029899853684, 0.47364193480655914, 0.628128751613359]
+                        },
+                        "files_generated": {
+                            "json_results": "Results/simulation_results.json"
+                        }
+                    }
+                }
+            },
+            radius_of_influence_meters=195.65,
             total_wells_analyzed=2,
-            pumping_length_seconds=1800.0,
-            total_simulation_time_steps=180,
+            pumping_length_seconds=177960.0,
+            total_simulation_time_steps=400,
             user_id="test-user-123"
         )
         
@@ -168,37 +220,96 @@ def create_test_data():
             description="Optimization simulation for well model",
             simulation_type="Optimization",
             status="completed",
-            results={
-                "optimizationResults": {
-                    "optimalParameters": {
-                        "hydraulicConductivity": 8.5,
-                        "specificYield": 0.18
-                    },
-                    "convergenceAchieved": True,
-                    "iterationsCompleted": 15,
-                    "finalRMSE": 0.12,
-                    "parameterHistory": [
-                        {"iteration": 1, "hydraulicConductivity": 5.0, "specificYield": 0.2, "rmse": 0.25},
-                        {"iteration": 5, "hydraulicConductivity": 7.2, "specificYield": 0.19, "rmse": 0.18},
-                        {"iteration": 10, "hydraulicConductivity": 8.1, "specificYield": 0.18, "rmse": 0.14},
-                        {"iteration": 15, "hydraulicConductivity": 8.5, "specificYield": 0.18, "rmse": 0.12}
-                    ]
+            simulation_settings={
+                "Choose Type of Simulation": {
+                    "value": "Optimization"
                 },
-                "analysisResults": {
-                    "parameterSensitivity": {
-                        "hydraulicConductivity": 0.85,
-                        "specificYield": 0.65
+                "Hydraulic Conductivity Flag": {
+                    "value": "Yes"
+                },
+                "Vk/Hk Ratio Flag": {
+                    "value": "Yes"
+                },
+                "Specific Yield (Sy) Flag": {
+                    "value": "Yes"
+                },
+                "Specific Storage (Ss) Flag": {
+                    "value": "No"
+                }
+            },
+            results={
+                "metadata": {
+                    "simulation_type": "Pumping + Recovery",
+                    "pumping_length_seconds": 177960,
+                    "generated_at": "2025-01-04T20:59:25.241926",
+                    "total_simulation_time_steps": 400
+                },
+                "summary": {
+                    "radius_of_influence_meters": 195.65,
+                    "total_wells_analyzed": 2
+                },
+                "simulation_times": [0.5145856873998947, 1.0549006591697843, 1.6222313795281682, 2.2179286359044714, 2.84341075509959, 3.5001669802544644],
+                "wells": {
+                    "OBS-1": {
+                        "well_id": "OBS-1",
+                        "distance_from_pumping_well_meters": [0.11, 0.225, 0.23550000000000001, 0.24705000000000005, 0.25975500000000007],
+                        "simulation_results": {
+                            "simulated_drawdown_meters": [-3.655990961625043e-06, -3.5547425368697027e-06, -3.2148930490589264e-06, -2.296674255417328e-06],
+                            "observed_drawdown_meters": [0, 0.52, 1.02, 1.17, 1.27],
+                            "observed_time_seconds": [0, 300, 600, 900, 1200, 1500, 1800],
+                            "avg_head_at_distance_meters": [-143.07964404261162, -140.41935299597378, -140.25016407225218, -140.07295579250209, -139.8877866733983]
+                        },
+                        "interpolation_results": {
+                            "rmse": 0.3871,
+                            "total_residual_error": 316.1503,
+                            "interpolated_times": [0, 300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300],
+                            "interpolated_observed_drawdown": [0.0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39],
+                            "interpolated_simulated_drawdown": [-3.752418032820605e-06, 0.25951029899853684, 0.47364193480655914, 0.628128751613359]
+                        },
+                        "files_generated": {
+                            "json_results": "Results/simulation_results.json"
+                        }
                     },
-                    "confidenceIntervals": {
-                        "hydraulicConductivity": {"lower": 7.8, "upper": 9.2},
-                        "specificYield": {"lower": 0.16, "upper": 0.20}
+                    "OBS-2": {
+                        "well_id": "OBS-2",
+                        "distance_from_pumping_well_meters": [0.11, 0.225, 0.23550000000000001, 0.24705000000000005, 0.25975500000000007],
+                        "simulation_results": {
+                            "simulated_drawdown_meters": [-3.655990961625043e-06, -3.5547425368697027e-06, -3.2148930490589264e-06, -2.296674255417328e-06],
+                            "observed_drawdown_meters": [0, 0.52, 1.02, 1.17, 1.27],
+                            "observed_time_seconds": [0, 300, 600, 900, 1200, 1500, 1800],
+                            "avg_head_at_distance_meters": [-143.07964404261162, -140.41935299597378, -140.25016407225218, -140.07295579250209, -139.8877866733983]
+                        },
+                        "interpolation_results": {
+                            "rmse": 0.63871,
+                            "total_residual_error": 210.1503,
+                            "interpolated_times": [0, 300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300],
+                            "interpolated_observed_drawdown": [0.0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39],
+                            "interpolated_simulated_drawdown": [-3.752418032820605e-06, 0.25951029899853684, 0.47364193480655914, 0.628128751613359]
+                        },
+                        "files_generated": {
+                            "json_results": "Results/simulation_results.json"
+                        }
+                    }
+                },
+                "optimization_results": {
+                    "parameters_optimized": ["hk_layer_1", "hk_layer_2", "sy", "ss"],
+                    "optimal_values": {
+                        "hk_profile": {
+                            "layer_0.0m_to_-350.0m": 0.8166553499999993,
+                            "layer_-350.0m_to_-700.0m": 51.875
+                        },
+                        "specific_yield": 0.12099988999999994,
+                        "specific_storage": 4.1261751785416686e-07
+                    },
+                    "files_generated": {
+                        "json_results": "Results/optimization_results.json"
                     }
                 }
             },
-            radius_of_influence_meters=120.3,
-            total_wells_analyzed=1,
-            pumping_length_seconds=900.0,
-            total_simulation_time_steps=90,
+            radius_of_influence_meters=195.65,
+            total_wells_analyzed=2,
+            pumping_length_seconds=177960.0,
+            total_simulation_time_steps=400,
             user_id="test-user-123"
         )
         

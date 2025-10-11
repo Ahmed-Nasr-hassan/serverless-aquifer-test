@@ -15,6 +15,7 @@ class SimulationBase(BaseModel):
     description: Optional[str] = None
     simulation_type: str = Field(..., min_length=1, max_length=100)
     status: Optional[str] = "pending"  # pending, running, completed, failed
+    simulation_settings: Optional[Dict[str, Any]] = None  # Simulation configuration and parameters (format: {"Human Readable Key": {"value": "Setting Value"}})
     results: Optional[Dict[str, Any]] = None  # Simulation results
     user_id: uuid.UUID
 
@@ -30,6 +31,7 @@ class SimulationUpdate(BaseModel):
     description: Optional[str] = None
     simulation_type: Optional[str] = Field(None, min_length=1, max_length=100)
     status: Optional[str] = None
+    simulation_settings: Optional[Dict[str, Any]] = None  # Simulation configuration and parameters (format: {"Human Readable Key": {"value": "Setting Value"}})
     results: Optional[Dict[str, Any]] = None
     radius_of_influence_meters: Optional[float] = Field(None, gt=0)
     total_wells_analyzed: Optional[int] = Field(None, ge=0)
