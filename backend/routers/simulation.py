@@ -326,10 +326,11 @@ async def run_simulation(
     # Build final message with metadata wrapper
     from datetime import datetime, timezone
     message = {
-            "user_id": str(current_user.id),
-            "model_id": str(model.id),
-            "model_inputs": model_inputs,
-            "hydraulic_conductivity": hydraulic_conductivity,
+        "user_id": str(current_user.id),
+        "model_id": str(model.id),
+        "simulation_id": str(simulation.id),
+        "model_inputs": model_inputs,
+        "hydraulic_conductivity": hydraulic_conductivity,
     }
 
     # Print for now (server stdout)

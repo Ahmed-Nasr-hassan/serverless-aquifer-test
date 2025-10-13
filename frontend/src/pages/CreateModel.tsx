@@ -231,8 +231,8 @@ export default function CreateModel() {
             gap: '0.5rem'
           }}>
             <span style={{ fontSize: '1.25rem' }}>ℹ️</span>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-              <strong>Currently Available:</strong> Only Aquifer Test Analysis models can be created at this time. 
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              <strong style={{ color: '#000' }}>Currently Available:</strong> Only <span style={{ color: '#000' }}>Aquifer Test Analysis</span> models can be created at this time. 
               Other model types are coming soon and will be available in future updates.
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function CreateModel() {
                         {MODEL_TYPE_ICONS[key as keyof typeof MODEL_TYPE_ICONS]}
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <span style={{ fontSize: '0.875rem' }}>{label}</span>
+                        <span style={{ fontSize: '0.875rem', color: label === 'Aquifer Test Analysis' ? '#000' : undefined }}>{label}</span>
                         {!isAvailable && (
                           <span style={{ 
                             fontSize: '0.75rem', 
