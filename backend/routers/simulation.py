@@ -12,6 +12,8 @@ from models.model import Model
 from models.user import User
 from schemas.simulation import SimulationCreate, SimulationUpdate, SimulationResponse
 from auth.utils import get_current_active_user
+import boto3
+import os
 import json
 
 simulation_router = APIRouter()
@@ -334,8 +336,15 @@ async def run_simulation(
     try:
         print(json.dumps(message, indent=2))
     except Exception:
-        # Fallback to raw print if serialization has non-JSON types
         print(str(message))
 
-    # Return the message so frontend can see it immediately as well
+    # Send to SQS if configured
+    queue_url = os.getenv("SIMULATION_SQS_URL", "https://sqs.us-east-1.amazonaws.com/835410374509/aquifer-test-simulation-queue")
+    try:
+        sqs = boto3.client("sqs", region_name=os.getenv("AWS_REGION", "us-east-1"))
+        sqs.send_message(QueueUrl=queue_url, MessageBody=json.dumps(message))
+    except Exception as e:
+        # Log and continue; still return message to client
+        print(f"Failed to send SQS message: {e}")
+
     return message
