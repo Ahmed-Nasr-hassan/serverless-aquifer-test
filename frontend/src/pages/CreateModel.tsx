@@ -87,21 +87,9 @@ export default function CreateModel() {
         data_files: {
           observed_data: { value: "observation_data.json" }
         },
-                    observation_data: {
-                      observation_wells: {
-                        "OBS-1": {
-                          "well_id": "OBS-1",
-                          "distance_from_well": 53.0,
-                          "top_screen_level": -212.0,
-                          "bottom_screen_level": -300.0,
-                          "data": {
-                            "time_minutes": [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
-                            "water_level": [45.3, 45.82, 46.32, 46.47, 46.57, 46.63, 46.69, 46.73, 46.76, 46.79, 46.81, 46.84, 46.86],
-                            "drawdown": [0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39, 1.43, 1.46, 1.49, 1.51, 1.54, 1.56]
-                          }
-                        }
-                      }
-                    },
+        observation_data: {
+          observation_wells: {}
+        },
         simulation_settings: {
           choose_type_of_simulation: { value: "Calibration" },
           hydraulic_conductivity_flag: { value: "Yes" },
@@ -185,6 +173,9 @@ export default function CreateModel() {
           <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: '700' }}>
             Create New Model
           </h1>
+          <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-muted)', fontSize: '1rem' }}>
+            Enter basic model information to get started
+          </p>
         </div>
       </div>
 

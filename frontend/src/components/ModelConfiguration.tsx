@@ -730,9 +730,9 @@ export function ObservationDataSection({ data = {}, editable = false, onChange }
       top_screen_level: -200,
       bottom_screen_level: -300,
       data: {
-        time_minutes: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
-        water_level: [45.3, 45.82, 46.32, 46.47, 46.57, 46.63, 46.69, 46.73, 46.76, 46.79, 46.81, 46.84, 46.86],
-        drawdown: [0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39, 1.43, 1.46, 1.49, 1.51, 1.54, 1.56]
+        time_minutes: [],
+        water_level: [],
+        drawdown: []
       }
     }
     onChange?.({ ...data, [wellId]: newWell })
@@ -763,38 +763,101 @@ export function ObservationDataSection({ data = {}, editable = false, onChange }
   }
 
   const handleCSVUpload = (wellId: string, file: File) => {
+    // Show loading state
+    const uploadButton = document.getElementById(`csv-upload-${wellId}`)?.nextElementSibling as HTMLElement
+    if (uploadButton) {
+      uploadButton.textContent = '⏳ Uploading...'
+      uploadButton.style.background = 'var(--warning)'
+    }
+
     const reader = new FileReader()
     reader.onload = (e) => {
-      const csv = e.target?.result as string
-      const lines = csv.split('\n').filter(line => line.trim())
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-      
-      const timeIndex = headers.findIndex(h => h.includes('time') || h.includes('minute'))
-      const waterIndex = headers.findIndex(h => h.includes('water') || h.includes('level'))
-      const drawdownIndex = headers.findIndex(h => h.includes('drawdown'))
-      
-      if (timeIndex === -1 || waterIndex === -1 || drawdownIndex === -1) {
-        alert('CSV must contain columns for time, water level, and drawdown')
-        return
-      }
-      
-      const timeData: number[] = []
-      const waterData: number[] = []
-      const drawdownData: number[] = []
-      
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim())
-        if (values.length >= Math.max(timeIndex, waterIndex, drawdownIndex) + 1) {
-          timeData.push(parseFloat(values[timeIndex]) || 0)
-          waterData.push(parseFloat(values[waterIndex]) || 0)
-          drawdownData.push(parseFloat(values[drawdownIndex]) || 0)
+      try {
+        const csv = e.target?.result as string
+        const lines = csv.split('\n').filter(line => line.trim())
+        
+        if (lines.length < 2) {
+          alert('CSV file must contain at least a header row and one data row')
+          return
+        }
+        
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+        
+        const timeIndex = headers.findIndex(h => h.includes('time') || h.includes('minute'))
+        const waterIndex = headers.findIndex(h => h.includes('water') || h.includes('level'))
+        const drawdownIndex = headers.findIndex(h => h.includes('drawdown'))
+        
+        if (timeIndex === -1 || waterIndex === -1 || drawdownIndex === -1) {
+          alert('CSV must contain columns for time, water level, and drawdown')
+          return
+        }
+        
+        const timeData: number[] = []
+        const waterData: number[] = []
+        const drawdownData: number[] = []
+        
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim())
+          if (values.length >= Math.max(timeIndex, waterIndex, drawdownIndex) + 1) {
+            const timeVal = parseFloat(values[timeIndex])
+            const waterVal = parseFloat(values[waterIndex])
+            const drawdownVal = parseFloat(values[drawdownIndex])
+            
+            if (!isNaN(timeVal) && !isNaN(waterVal) && !isNaN(drawdownVal)) {
+              timeData.push(timeVal)
+              waterData.push(waterVal)
+              drawdownData.push(drawdownVal)
+            }
+          }
+        }
+        
+        if (timeData.length === 0) {
+          alert('No valid data found in CSV file')
+          return
+        }
+        
+        // Update all data at once to ensure proper re-rendering
+        const newWells = { ...data }
+        newWells[wellId] = {
+          ...newWells[wellId],
+          data: {
+            time_minutes: timeData,
+            water_level: waterData,
+            drawdown: drawdownData
+          }
+        }
+        onChange?.(newWells)
+        
+        // Show success state
+        if (uploadButton) {
+          uploadButton.textContent = '✅ Uploaded'
+          uploadButton.style.background = 'var(--success)'
+          setTimeout(() => {
+            uploadButton.textContent = '📁 Upload CSV'
+            uploadButton.style.background = 'var(--blue-500)'
+          }, 2000)
+        }
+        
+      } catch (error) {
+        console.error('Error processing CSV:', error)
+        alert('Error processing CSV file. Please check the format.')
+        
+        // Reset button state
+        if (uploadButton) {
+          uploadButton.textContent = '📁 Upload CSV'
+          uploadButton.style.background = 'var(--blue-500)'
         }
       }
-      
-      updateWellData(wellId, 'time_minutes', timeData)
-      updateWellData(wellId, 'water_level', waterData)
-      updateWellData(wellId, 'drawdown', drawdownData)
     }
+    
+    reader.onerror = () => {
+      alert('Error reading file')
+      if (uploadButton) {
+        uploadButton.textContent = '📁 Upload CSV'
+        uploadButton.style.background = 'var(--blue-500)'
+      }
+    }
+    
     reader.readAsText(file)
   }
 
@@ -1072,19 +1135,28 @@ export function ObservationDataSection({ data = {}, editable = false, onChange }
                 <div>
                   <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Time Range</div>
                   <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {Math.min(...well.data.time_minutes)} - {Math.max(...well.data.time_minutes)} min
+                    {well.data.time_minutes.length > 0 
+                      ? `${Math.min(...well.data.time_minutes)} - ${Math.max(...well.data.time_minutes)} min`
+                      : 'No data'
+                    }
                   </div>
                 </div>
                 <div>
                   <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Max Drawdown</div>
                   <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {Math.max(...well.data.drawdown).toFixed(3)} m
+                    {well.data.drawdown.length > 0 
+                      ? `${Math.max(...well.data.drawdown).toFixed(3)} m`
+                      : 'No data'
+                    }
                   </div>
                 </div>
                 <div>
                   <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Min Water Level</div>
                   <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {Math.min(...well.data.water_level).toFixed(3)} m
+                    {well.data.water_level.length > 0 
+                      ? `${Math.min(...well.data.water_level).toFixed(3)} m`
+                      : 'No data'
+                    }
                   </div>
                 </div>
               </div>
@@ -1202,5 +1274,94 @@ export function StressPeriodsSection({ data, editable = false, onChange }: Discr
         />
       ))}
     </SectionCard>
+  )
+}
+
+// Main ModelConfiguration component that combines all sections
+interface ModelConfigurationProps {
+  configuration: {
+    model_inputs?: any
+    hydraulic_conductivity?: any[]
+  }
+  onChange?: (configuration: any) => void
+}
+
+export function ModelConfiguration({ configuration, onChange }: ModelConfigurationProps) {
+  const modelInputs = configuration.model_inputs || {}
+  const hydraulicConductivity = configuration.hydraulic_conductivity || []
+
+  const handleModelInputsChange = (section: string, data: any) => {
+    if (!onChange) return
+    
+    const updatedModelInputs = {
+      ...modelInputs,
+      [section]: data
+    }
+    
+    onChange({
+      ...configuration,
+      model_inputs: updatedModelInputs
+    })
+  }
+
+  const handleHydraulicConductivityChange = (data: any[]) => {
+    if (!onChange) return
+    
+    onChange({
+      ...configuration,
+      hydraulic_conductivity: data
+    })
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <RadialDiscretizationSection 
+        data={modelInputs.radial_discretization}
+        editable={true}
+        onChange={(data) => handleModelInputsChange('radial_discretization', data)}
+      />
+      
+      <VerticalDiscretizationSection 
+        data={modelInputs.vertical_discretization}
+        editable={true}
+        onChange={(data) => handleModelInputsChange('vertical_discretization', data)}
+      />
+      
+      <PumpingWellSection 
+        data={modelInputs.pumping_well}
+        editable={true}
+        onChange={(data) => handleModelInputsChange('pumping_well', data)}
+      />
+      
+      <InitialBoundaryConditionsSection 
+        data={modelInputs.initial_boundary_conditions}
+        editable={true}
+        onChange={(data) => handleModelInputsChange('initial_boundary_conditions', data)}
+      />
+      
+      <HydraulicParametersSection 
+        data={modelInputs.hydraulic_parameters}
+        editable={true}
+        onChange={(data) => handleModelInputsChange('hydraulic_parameters', data)}
+      />
+      
+      <HydraulicConductivitySection 
+        data={hydraulicConductivity}
+        editable={true}
+        onChange={handleHydraulicConductivityChange}
+      />
+      
+      <ObservationDataSection 
+        data={modelInputs.observation_data?.observation_wells || {}}
+        editable={true}
+        onChange={(wells) => handleModelInputsChange('observation_data', { observation_wells: wells })}
+      />
+      
+      <StressPeriodsSection 
+        data={modelInputs.stress_periods}
+        editable={true}
+        onChange={(data) => handleModelInputsChange('stress_periods', data)}
+      />
+    </div>
   )
 }

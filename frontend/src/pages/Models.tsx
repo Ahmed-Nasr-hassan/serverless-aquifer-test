@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { ModelConfiguration as ModelConfigurationComponent } from '../components/ModelConfiguration'
 
 // Define the Model type based on the backend schema
 type ModelConfiguration = {
@@ -40,6 +41,81 @@ export default function Models() {
     name: '',
     description: '',
     modelType: 'aquifer_test' as 'aquifer_test' | 'conceptual' | 'solute_transport' | 'seawater_intrusion' | 'stochastic'
+  })
+  const [modelConfiguration, setModelConfiguration] = useState<ModelConfiguration>({
+    model_inputs: {
+      radial_discretization: {
+        boundary_distance_from_pumping_well: { value: 500, unit: "m" },
+        second_column_size: { value: 0.01, unit: "m" },
+        column_multiplier: { value: 1.1 }
+      },
+      vertical_discretization: {
+        saturated_top_elevation: { value: -121.84, unit: "m" },
+        aquifer_bottom_elevation: { value: -500, unit: "m" },
+        screen_top_cell_thickness: { value: 0.01, unit: "m" },
+        screen_bottom_cell_thickness: { value: 0.01, unit: "m" },
+        refinement_above_screen: { value: 1.6 },
+        refinement_below_screen: { value: 1.3 },
+        refinement_between_screen: { value: 1.1 }
+      },
+      pumping_well: {
+        well_radius: { value: 0.22, unit: "m" },
+        pumping_rate: { value: -141, unit: "m³/hr" },
+        screen_top_elevation: { value: -212, unit: "m" },
+        screen_bottom_elevation: { value: -378, unit: "m" }
+      },
+      observation_wells: {
+        observation_wells: { value: "OBS-1", unit: "No" },
+        observation_well_distance: { value: 53 },
+        observation_top_screen_level: { value: -212 },
+        observation_bottom_screen_level: { value: -300 }
+      },
+      initial_boundary_conditions: {
+        starting_head: { value: -121.84, unit: "m" },
+        specified_head: { value: -121.84, unit: "m" }
+      },
+      stress_periods: {
+        analysis_period: { value: "Pumping + Recovery" },
+        pumping_length: { value: 2966, unit: "minutes" },
+        recovery_length: { value: 1200, unit: "minutes" },
+        number_of_time_steps: { value: 200 },
+        time_multiplier: { value: 1.05 },
+        time_units: { value: "SECONDS" }
+      },
+      hydraulic_parameters: {
+        hydraulic_conductivity: { value: 0.9073948333333328 },
+        vk_hk_ratio: { value: 1 },
+        specific_yield: { value: 0.11662639999999996 },
+        specific_storage: { value: 3.977036316666669e-07 }
+      },
+      data_files: {
+        observed_data: { value: "observation_data.json" }
+      },
+      observation_data: {
+        observation_wells: {}
+      },
+      simulation_settings: {
+        choose_type_of_simulation: { value: "Calibration" },
+        hydraulic_conductivity_flag: { value: "Yes" },
+        vk_hk_ratio_flag: { value: "No" },
+        specific_yield_flag: { value: "Yes" },
+        specific_storage_flag: { value: "Yes" }
+      }
+    },
+    hydraulic_conductivity: [
+      {
+        soil_material: "Sandstone",
+        layer_top_level_m: 0,
+        layer_bottom_level_m: -350,
+        hydraulic_conductivity_m_per_day: 0.9073948333333328
+      },
+      {
+        soil_material: "Sand",
+        layer_top_level_m: -350,
+        layer_bottom_level_m: -700,
+        hydraulic_conductivity_m_per_day: 50
+      }
+    ]
   })
   const [creating, setCreating] = useState(false)
   const [editingModel, setEditingModel] = useState<Model | null>(null)
@@ -83,93 +159,7 @@ export default function Models() {
         name: newModel.name.trim(),
         description: newModel.description.trim(),
         model_type: newModel.modelType,
-        configuration: {
-          model_inputs: {
-            radial_discretization: {
-              boundary_distance_from_pumping_well: { value: 500, unit: "m" },
-              second_column_size: { value: 0.01, unit: "m" },
-              column_multiplier: { value: 1.1 }
-            },
-            vertical_discretization: {
-              saturated_top_elevation: { value: -121.84, unit: "m" },
-              aquifer_bottom_elevation: { value: -500, unit: "m" },
-              screen_top_cell_thickness: { value: 0.01, unit: "m" },
-              screen_bottom_cell_thickness: { value: 0.01, unit: "m" },
-              refinement_above_screen: { value: 1.6 },
-              refinement_below_screen: { value: 1.3 },
-              refinement_between_screen: { value: 1.1 }
-            },
-            pumping_well: {
-              well_radius: { value: 0.22, unit: "m" },
-              pumping_rate: { value: -141, unit: "m³/hr" },
-              screen_top_elevation: { value: -212, unit: "m" },
-              screen_bottom_elevation: { value: -378, unit: "m" }
-            },
-            observation_wells: {
-              observation_wells: { value: "OBS-1", unit: "No" },
-              observation_well_distance: { value: 53 },
-              observation_top_screen_level: { value: -212 },
-              observation_bottom_screen_level: { value: -300 }
-            },
-            initial_boundary_conditions: {
-              starting_head: { value: -121.84, unit: "m" },
-              specified_head: { value: -121.84, unit: "m" }
-            },
-            stress_periods: {
-              analysis_period: { value: "Pumping + Recovery" },
-              pumping_length: { value: 2966, unit: "minutes" },
-              recovery_length: { value: 1200, unit: "minutes" },
-              number_of_time_steps: { value: 200 },
-              time_multiplier: { value: 1.05 },
-              time_units: { value: "SECONDS" }
-            },
-            hydraulic_parameters: {
-              hydraulic_conductivity: { value: 0.9073948333333328 },
-              vk_hk_ratio: { value: 1 },
-              specific_yield: { value: 0.11662639999999996 },
-              specific_storage: { value: 3.977036316666669e-07 }
-            },
-            data_files: {
-              observed_data: { value: "observation_data.json" }
-            },
-                    observation_data: {
-                      observation_wells: {
-                        "OBS-1": {
-                          "well_id": "OBS-1",
-                          "distance_from_well": 53.0,
-                          "top_screen_level": -212.0,
-                          "bottom_screen_level": -300.0,
-                          "data": {
-                            "time_minutes": [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
-                            "water_level": [45.3, 45.82, 46.32, 46.47, 46.57, 46.63, 46.69, 46.73, 46.76, 46.79, 46.81, 46.84, 46.86],
-                            "drawdown": [0, 0.52, 1.02, 1.17, 1.27, 1.33, 1.39, 1.43, 1.46, 1.49, 1.51, 1.54, 1.56]
-                          }
-                        }
-                      }
-                    },
-            simulation_settings: {
-              choose_type_of_simulation: { value: "Calibration" },
-              hydraulic_conductivity_flag: { value: "Yes" },
-              vk_hk_ratio_flag: { value: "No" },
-              specific_yield_flag: { value: "Yes" },
-              specific_storage_flag: { value: "Yes" }
-            }
-          },
-          hydraulic_conductivity: [
-            {
-              soil_material: "Sandstone",
-              layer_top_level_m: 0.0,
-              layer_bottom_level_m: -350.0,
-              hydraulic_conductivity_m_per_day: 0.9073948333333328
-            },
-            {
-              soil_material: "Sand",
-              layer_top_level_m: -350.0,
-              layer_bottom_level_m: -700.0,
-              hydraulic_conductivity_m_per_day: 50
-            }
-          ]
-        },
+        configuration: modelConfiguration,
         status: 'active'
       }
       
@@ -517,6 +507,25 @@ export default function Models() {
                   fontSize: '0.875rem',
                   boxSizing: 'border-box',
                   resize: 'vertical'
+                }}
+              />
+            </div>
+
+            {/* Model Configuration */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{
+                margin: '0 0 1rem 0',
+                color: 'var(--text-primary)',
+                fontSize: '1.125rem',
+                fontWeight: '600'
+              }}>
+                Model Configuration
+              </h3>
+              
+              <ModelConfigurationComponent 
+                configuration={modelConfiguration}
+                onChange={(config) => {
+                  setModelConfiguration(config)
                 }}
               />
             </div>

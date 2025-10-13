@@ -42,6 +42,23 @@ export default function Simulations() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedSimulation, setSelectedSimulation] = useState<Simulation | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  // Add CSS animation for auto-refresh indicator
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    `
+    document.head.appendChild(style)
+    
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
 
   // Resolve CSS variables to concrete colors for Chart.js and keep in sync with theme
   const getCssVar = (name: string) =>
@@ -109,6 +126,79 @@ export default function Simulations() {
     fetchSimulations()
   }, [isAuthenticated])
 
+  // Auto-refresh for pending simulations
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const hasPendingSimulations = simulations.some(sim => sim.status === 'pending')
+    
+    if (!hasPendingSimulations) return
+
+    console.log('Setting up auto-refresh for pending simulations...')
+    
+    const interval = setInterval(async () => {
+      try {
+        console.log('Auto-refreshing simulations...')
+        const response = await axios.get('/api/v1/simulations/')
+        const updatedSimulations = response.data
+        
+        // Check if any pending simulations have completed
+        const completedSimulations = updatedSimulations.filter((sim: Simulation) => 
+          sim.status === 'completed' && 
+          simulations.find(s => s.id === sim.id)?.status === 'pending'
+        )
+        
+        if (completedSimulations.length > 0) {
+          console.log('Found completed simulations:', completedSimulations.map(s => s.name))
+        }
+        
+        setSimulations(updatedSimulations)
+        
+        // Update selected simulation if it was updated
+        if (selectedSimulation) {
+          const updatedSelected = updatedSimulations.find((sim: Simulation) => sim.id === selectedSimulation.id)
+          if (updatedSelected) {
+            setSelectedSimulation(updatedSelected)
+          }
+        }
+        
+      } catch (e: any) {
+        console.error('Error auto-refreshing simulations:', e)
+      }
+    }, 10000) // Refresh every 10 seconds
+
+    return () => {
+      console.log('Clearing auto-refresh interval')
+      clearInterval(interval)
+    }
+  }, [isAuthenticated, simulations, selectedSimulation])
+
+  // Delete simulation function
+  const handleDeleteSimulation = async (simulationId: string) => {
+    if (!confirm('Are you sure you want to delete this simulation? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      setDeleting(simulationId)
+      await axios.delete(`/api/v1/simulations/${simulationId}`)
+      
+      // Remove from local state
+      setSimulations(prev => prev.filter(sim => sim.id !== simulationId))
+      
+      // Clear selection if deleted simulation was selected
+      if (selectedSimulation?.id === simulationId) {
+        setSelectedSimulation(null)
+      }
+      
+    } catch (e: any) {
+      console.error('Error deleting simulation:', e)
+      alert('Failed to delete simulation: ' + (e?.response?.data?.detail || e?.message || 'Unknown error'))
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -173,17 +263,82 @@ export default function Simulations() {
       const interpolatedObserved = wellData.interpolation_results.interpolated_observed_drawdown
       const interpolatedSimulated = wellData.interpolation_results.interpolated_simulated_drawdown
 
+      // Create proper data points with time-value pairs
+      const observedDataPoints = observedTimes.map((time, index) => ({
+        x: time,
+        y: observedDrawdown[index]
+      }))
+      
+      const simulatedDataPoints = observedTimes.map((time, index) => ({
+        x: time,
+        y: simulatedDrawdown[index]
+      }))
+      
+      const interpolatedObservedPoints = interpolatedTimes.map((time, index) => ({
+        x: time,
+        y: interpolatedObserved[index]
+      }))
+      
+      const interpolatedSimulatedPoints = interpolatedTimes.map((time, index) => ({
+        x: time,
+        y: interpolatedSimulated[index]
+      }))
+
+      // Combine and deduplicate data points by time
+      const allObservedPoints = [...observedDataPoints, ...interpolatedObservedPoints]
+        .sort((a, b) => a.x - b.x)
+        .filter((point, index, array) => {
+          // Remove duplicates by keeping only the first occurrence of each time point
+          return index === 0 || point.x !== array[index - 1].x
+        })
+      
+      const allSimulatedPoints = [...simulatedDataPoints, ...interpolatedSimulatedPoints]
+        .sort((a, b) => a.x - b.x)
+        .filter((point, index, array) => {
+          // Remove duplicates by keeping only the first occurrence of each time point
+          return index === 0 || point.x !== array[index - 1].x
+        })
+
+      // Apply smoothing filter to remove noise from simulated data
+      const smoothSimulatedPoints = allSimulatedPoints.map((point, index) => {
+        if (index === 0 || index === allSimulatedPoints.length - 1) {
+          return point // Keep first and last points unchanged
+        }
+        
+        // Calculate moving average with neighbors to smooth out noise
+        const prevPoint = allSimulatedPoints[index - 1]
+        const nextPoint = allSimulatedPoints[index + 1]
+        
+        // Only apply smoothing if the point seems like an outlier (large jump)
+        const prevDiff = Math.abs(point.y - prevPoint.y)
+        const nextDiff = Math.abs(point.y - nextPoint.y)
+        const avgDiff = (prevDiff + nextDiff) / 2
+        
+        // If this point is significantly different from neighbors, smooth it
+        if (avgDiff > 0.1) { // Threshold for detecting noise
+          const smoothedY = (prevPoint.y + point.y + nextPoint.y) / 3
+          return { x: point.x, y: smoothedY }
+        }
+        
+        return point
+      })
+
+      // Extract sorted times and values
+      const sortedTimes = allObservedPoints.map(point => point.x)
+      const sortedObservedValues = allObservedPoints.map(point => point.y)
+      const sortedSimulatedValues = smoothSimulatedPoints.map(point => point.y)
+
       return {
-        labels: [...observedTimes, ...interpolatedTimes].sort((a, b) => a - b),
+        labels: sortedTimes,
         datasets: [
           {
             label: 'Observed Drawdown',
-            data: [...observedDrawdown, ...interpolatedObserved],
+            data: sortedObservedValues,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             borderWidth: 3,
-            pointRadius: 5,
-            pointHoverRadius: 8,
+            pointRadius: 0,
+            pointHoverRadius: 6,
             pointBackgroundColor: '#3b82f6',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
@@ -191,16 +346,16 @@ export default function Simulations() {
           },
           {
             label: 'Simulated Drawdown',
-            data: [...simulatedDrawdown, ...interpolatedSimulated],
+            data: sortedSimulatedValues,
             borderColor: '#ef4444',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             borderWidth: 3,
-            pointRadius: 5,
-            pointHoverRadius: 8,
+            pointRadius: 0,
+            pointHoverRadius: 6,
             pointBackgroundColor: '#ef4444',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
-            tension: 0.1,
+            tension: 0.6,
           }
         ]
       }
@@ -310,8 +465,23 @@ export default function Simulations() {
           padding: '1.5rem',
           height: 'fit-content'
         }}>
-          <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: '600' }}>
+          <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Simulations ({simulations.length})
+            {simulations.some(sim => sim.status === 'pending') && (
+              <span style={{
+                fontSize: '0.75rem',
+                background: 'var(--warning)',
+                color: 'white',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                animation: 'pulse 2s infinite'
+              }}>
+                🔄 Auto-refreshing
+              </span>
+            )}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {simulations.map((sim) => (
@@ -363,9 +533,43 @@ export default function Simulations() {
                   }}>
                     {getStatusIcon(sim.status)} {sim.status}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-disabled)' }}>
-                    {formatDate(sim.created_at)}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-disabled)' }}>
+                      {formatDate(sim.created_at)}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteSimulation(sim.id)
+                      }}
+                      disabled={deleting === sim.id}
+                      style={{
+                        background: deleting === sim.id ? 'var(--text-disabled)' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.75rem',
+                        cursor: deleting === sim.id ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (deleting !== sim.id) {
+                          e.currentTarget.style.background = '#dc2626'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (deleting !== sim.id) {
+                          e.currentTarget.style.background = '#ef4444'
+                        }
+                      }}
+                    >
+                      {deleting === sim.id ? '⏳' : '🗑️'} {deleting === sim.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -557,7 +761,11 @@ export default function Simulations() {
                                   grid: {
                                     color: theme.borderPrimary,
                                     drawBorder: false
-                                  }
+                                  },
+                                  beginAtZero: false,
+                                  suggestedMin: -0.5,
+                                  suggestedMax: 2.5,
+                                  grace: '10%'
                                 }
                               },
                               interaction: {
