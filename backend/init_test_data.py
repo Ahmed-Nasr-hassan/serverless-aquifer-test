@@ -204,10 +204,6 @@ def create_test_data():
                     }
                 }
             },
-            radius_of_influence_meters=195.65,
-            total_wells_analyzed=2,
-            pumping_length_seconds=177960.0,
-            total_simulation_time_steps=400,
             user_id="test-user-123"
         )
         
@@ -306,10 +302,6 @@ def create_test_data():
                     }
                 }
             },
-            radius_of_influence_meters=195.65,
-            total_wells_analyzed=2,
-            pumping_length_seconds=177960.0,
-            total_simulation_time_steps=400,
             user_id="test-user-123"
         )
         

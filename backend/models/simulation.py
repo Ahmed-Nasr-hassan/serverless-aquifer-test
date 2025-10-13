@@ -32,12 +32,6 @@ class Simulation(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     completed_at = Column(DateTime(timezone=True))
     
-    # Results summary (for quick access without parsing JSON)
-    radius_of_influence_meters = Column(Float)
-    total_wells_analyzed = Column(Integer)
-    pumping_length_seconds = Column(Float)
-    total_simulation_time_steps = Column(Integer)
-    
     # User association
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     

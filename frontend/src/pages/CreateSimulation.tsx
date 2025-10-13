@@ -12,15 +12,25 @@ export default function CreateSimulation() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    simulation_type: 'Optimization',
+    simulation_type: 'Forward Run', // Use the value from simulation_settings
     status: 'pending',
     model_id: '',
     simulation_settings: {
-      choose_type_of_simulation: 'Forward Run',
-      hydraulic_conductivity_flag: 'Yes',
-      vk_hk_ratio_flag: 'No',
-      specific_yield_flag: 'Yes',
-      specific_storage_flag: 'Yes'
+      "Choose Type of Simulation": {
+        "value": "Forward Run"
+      },
+      "Hydraulic Conductivity Flag": {
+        "value": "Yes"
+      },
+      "Vk/Hk Ratio Flag": {
+        "value": "No"
+      },
+      "Specific Yield (Sy) Flag": {
+        "value": "Yes"
+      },
+      "Specific Storage (Ss) Flag": {
+        "value": "Yes"
+      }
     }
   })
   const [loading, setLoading] = useState(false)
@@ -126,13 +136,26 @@ export default function CreateSimulation() {
   }
 
   const handleSimulationSettingChange = (setting: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      simulation_settings: {
+    setFormData(prev => {
+      const newSettings = {
         ...prev.simulation_settings,
-        [setting]: value
+        [setting]: {
+          value: value
+        }
       }
-    }))
+      
+      // Update simulation_type based on "Choose Type of Simulation" setting
+      let newSimulationType = prev.simulation_type
+      if (setting === "Choose Type of Simulation") {
+        newSimulationType = value
+      }
+      
+      return {
+        ...prev,
+        simulation_type: newSimulationType,
+        simulation_settings: newSettings
+      }
+    })
   }
 
   return (
@@ -301,8 +324,8 @@ export default function CreateSimulation() {
                   Choose Type of Simulation *
                 </label>
                 <select 
-                  value={formData.simulation_settings.choose_type_of_simulation}
-                  onChange={(e) => handleSimulationSettingChange('choose_type_of_simulation', e.target.value)}
+                  value={formData.simulation_settings["Choose Type of Simulation"]?.value || "Forward Run"}
+                  onChange={(e) => handleSimulationSettingChange('Choose Type of Simulation', e.target.value)}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
@@ -331,8 +354,8 @@ export default function CreateSimulation() {
                   Hydraulic Conductivity Flag *
                 </label>
                 <select 
-                  value={formData.simulation_settings.hydraulic_conductivity_flag}
-                  onChange={(e) => handleSimulationSettingChange('hydraulic_conductivity_flag', e.target.value)}
+                  value={formData.simulation_settings["Hydraulic Conductivity Flag"]?.value || "Yes"}
+                  onChange={(e) => handleSimulationSettingChange('Hydraulic Conductivity Flag', e.target.value)}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
@@ -361,8 +384,8 @@ export default function CreateSimulation() {
                   Vk/Hk Ratio Flag *
                 </label>
                 <select 
-                  value={formData.simulation_settings.vk_hk_ratio_flag}
-                  onChange={(e) => handleSimulationSettingChange('vk_hk_ratio_flag', e.target.value)}
+                  value={formData.simulation_settings["Vk/Hk Ratio Flag"]?.value || "No"}
+                  onChange={(e) => handleSimulationSettingChange('Vk/Hk Ratio Flag', e.target.value)}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
@@ -391,8 +414,8 @@ export default function CreateSimulation() {
                   Specific Yield (Sy) Flag *
                 </label>
                 <select 
-                  value={formData.simulation_settings.specific_yield_flag}
-                  onChange={(e) => handleSimulationSettingChange('specific_yield_flag', e.target.value)}
+                  value={formData.simulation_settings["Specific Yield (Sy) Flag"]?.value || "Yes"}
+                  onChange={(e) => handleSimulationSettingChange('Specific Yield (Sy) Flag', e.target.value)}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
@@ -421,8 +444,8 @@ export default function CreateSimulation() {
                   Specific Storage (Ss) Flag *
                 </label>
                 <select 
-                  value={formData.simulation_settings.specific_storage_flag}
-                  onChange={(e) => handleSimulationSettingChange('specific_storage_flag', e.target.value)}
+                  value={formData.simulation_settings["Specific Storage (Ss) Flag"]?.value || "Yes"}
+                  onChange={(e) => handleSimulationSettingChange('Specific Storage (Ss) Flag', e.target.value)}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',

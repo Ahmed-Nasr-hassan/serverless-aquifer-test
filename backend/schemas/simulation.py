@@ -33,10 +33,6 @@ class SimulationUpdate(BaseModel):
     status: Optional[str] = None
     simulation_settings: Optional[Dict[str, Any]] = None  # Simulation configuration and parameters (format: {"Human Readable Key": {"value": "Setting Value"}})
     results: Optional[Dict[str, Any]] = None
-    radius_of_influence_meters: Optional[float] = Field(None, gt=0)
-    total_wells_analyzed: Optional[int] = Field(None, ge=0)
-    pumping_length_seconds: Optional[float] = Field(None, gt=0)
-    total_simulation_time_steps: Optional[int] = Field(None, ge=0)
 
 
 class SimulationResponse(SimulationBase):
@@ -45,10 +41,6 @@ class SimulationResponse(SimulationBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    radius_of_influence_meters: Optional[float] = None
-    total_wells_analyzed: Optional[int] = None
-    pumping_length_seconds: Optional[float] = None
-    total_simulation_time_steps: Optional[int] = None
     
     class Config:
         from_attributes = True
