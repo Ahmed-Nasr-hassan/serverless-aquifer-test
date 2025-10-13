@@ -38,3 +38,12 @@ resource "aws_lambda_event_source_mapping" "sqs_trigger" {
 
   depends_on = [module.lambda]
 }
+
+module "ec2_test" {
+  source = "./modules/ec2_test"
+
+  instance_type       = "t4g.small"
+  instance_name       = "aquifer-ec2-test"
+  security_group_name = "ec2-test-open-sg"
+  tags                = local.common_tags
+}
