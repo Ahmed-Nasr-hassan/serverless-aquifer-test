@@ -1,0 +1,219 @@
+{
+    "user_id": "f358f817-8516-4b43-84c4-491652c38cb7",
+    "model_id": "ef4483bd-bfce-48d0-ac06-919aa281be2e",
+    "model_inputs": {
+      "radial_discretization": {
+        "second_column_size": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "column_multiplier": {
+          "value": 1.1
+        },
+        "Boundary distance from pumping well": {
+          "value": 7500,
+          "unit": "m"
+        }
+      },
+      "vertical_discretization": {
+        "saturated_top_elevation": {
+          "value": -121.84,
+          "unit": "m"
+        },
+        "aquifer_bottom_elevation": {
+          "value": -500,
+          "unit": "m"
+        },
+        "screen_top_cell_thickness": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "screen_bottom_cell_thickness": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "refinement_above_screen": {
+          "value": 1.6
+        },
+        "refinement_below_screen": {
+          "value": 1.3
+        },
+        "refinement_between_screen": {
+          "value": 1.1
+        }
+      },
+      "pumping_well": {
+        "well_radius": {
+          "value": 0.22,
+          "unit": "m"
+        },
+        "pumping_rate": {
+          "value": -141,
+          "unit": "m\u00b3/hr"
+        },
+        "screen_top_elevation": {
+          "value": -212,
+          "unit": "m"
+        },
+        "screen_bottom_elevation": {
+          "value": -378,
+          "unit": "m"
+        }
+      },
+      "observation_wells": {
+        "observation_wells": {
+          "value": "OBS-1",
+          "unit": "No"
+        },
+        "observation_well_distance": {
+          "value": 53
+        },
+        "observation_top_screen_level": {
+          "value": -212
+        },
+        "observation_bottom_screen_level": {
+          "value": -300
+        }
+      },
+      "initial_boundary_conditions": {
+        "starting_head": {
+          "value": -121.84,
+          "unit": "m"
+        },
+        "specified_head": {
+          "value": -121.84,
+          "unit": "m"
+        }
+      },
+      "stress_periods": {
+        "analysis_period": {
+          "value": "Pumping Only"
+        },
+        "pumping_length": {
+          "value": 2966,
+          "unit": "minutes"
+        },
+        "recovery_length": {
+          "value": 1200,
+          "unit": "minutes"
+        },
+        "number_of_time_steps": {
+          "value": 200
+        },
+        "time_multiplier": {
+          "value": 1.05
+        },
+        "time_units": {
+          "value": "SECONDS"
+        }
+      },
+      "hydraulic_parameters": {
+        "Vk/Hk Ratio": {
+          "value": 1
+        },
+        "Specific Yield (Sy)": {
+          "value": 0.11662639999999996
+        },
+        "Specific Storage (Ss)": {
+          "value": 3.977036316666669e-07
+        }
+      },
+      "data_files": {
+        "observed_data": {
+          "value": "observation_data.json"
+        }
+      },
+      "observation_data": {
+        "observation_wells": {
+          "OBS-1": {
+            "well_id": "OBS-1",
+            "distance_from_well": 50,
+            "top_screen_level": -200,
+            "bottom_screen_level": -300,
+            "data": {
+              "time_minutes": [
+                0,
+                5,
+                10,
+                15,
+                20,
+                25,
+                30,
+                35,
+                40,
+                45,
+                50,
+                55,
+                60
+              ],
+              "water_level": [
+                45.3,
+                45.82,
+                46.32,
+                46.47,
+                46.57,
+                46.63,
+                46.69,
+                46.73,
+                46.76,
+                46.79,
+                46.81,
+                46.84,
+                46.86
+              ],
+              "drawdown": [
+                0,
+                0.52,
+                1.02,
+                1.17,
+                1.27
+              ]
+            }
+          }
+        }
+      },
+      "simulation_settings": {
+        "Choose Type of Simulation": {
+          "value": "Forward Run"
+        },
+        "Hydraulic Conductivity Flag": {
+          "value": "Yes"
+        },
+        "Vk/Hk Ratio Flag": {
+          "value": "No"
+        },
+        "Specific Yield (Sy) Flag": {
+          "value": "Yes"
+        },
+        "Specific Storage (Ss) Flag": {
+          "value": "Yes"
+        }
+      }
+    },
+    "hydraulic_conductivity": [
+      {
+        "soil_material": "Sandstone",
+        "layer_top_level_m": 0,
+        "layer_bottom_level_m": -350,
+        "hydraulic_conductivity_m_per_day": 0.9073948333333328
+      },
+      {
+        "soil_material": "Sand",
+        "layer_top_level_m": -350,
+        "layer_bottom_level_m": -700,
+        "hydraulic_conductivity_m_per_day": 50
+      },
+      {
+        "soil_material": "koko",
+        "layer_top_level_m": 0,
+        "layer_bottom_level_m": -100,
+        "hydraulic_conductivity_m_per_day": 1000
+      },
+      {
+        "soil_material": "New Material",
+        "layer_top_level_m": 0,
+        "layer_bottom_level_m": -100,
+        "hydraulic_conductivity_m_per_day": 177
+      }
+    ]
+  }

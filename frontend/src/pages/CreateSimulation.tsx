@@ -117,8 +117,13 @@ export default function CreateSimulation() {
         ...formData,
         user_id: 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6' // Demo user ID
       })
-      
-      if (response.status === 201) {
+
+      if (response.status === 201 && response.data?.id) {
+        try {
+          await axios.post(`/api/v1/simulations/${response.data.id}/run`)
+        } catch (runErr: any) {
+          console.error('Failed to run simulation:', runErr)
+        }
         navigate('/simulations')
       }
     } catch (e: any) {
